@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Oxide.Plugins
 {
-    [Info("Vehicle Decay Protection", "WhiteThunder", "1.0.0")]
+    [Info("Vehicle Decay Protection", "WhiteThunder", "1.0.1")]
     [Description("Protects vehicles from decay around tool cupboards and when recently used.")]
     internal class VehicleDecayProtection : CovalencePlugin
     {
@@ -20,7 +20,21 @@ namespace Oxide.Plugins
             PluginConfig = Config.ReadObject<VehicleDecayConfig>();
         }
 
-        private object OnEntityTakeDamage(BaseCombatEntity entity, HitInfo hitInfo)
+        // Using separate hooks to theoretically improve performance by reducing hook calls
+        private object OnEntityTakeDamage(BaseVehicle entity, HitInfo hitInfo) =>
+            ProcessDecayDamage(entity, hitInfo);
+
+        private object OnEntityTakeDamage(HotAirBalloon entity, HitInfo hitInfo) =>
+            ProcessDecayDamage(entity, hitInfo);
+
+        private object OnEntityTakeDamage(BaseVehicleModule entity, HitInfo hitInfo) =>
+            ProcessDecayDamage(entity, hitInfo);
+
+        #endregion
+
+        #region Helper Methods
+
+        private object ProcessDecayDamage(BaseCombatEntity entity, HitInfo hitInfo)
         {
             if (!hitInfo.damageTypes.Has(Rust.DamageType.Decay)) return null;
 
@@ -38,7 +52,7 @@ namespace Oxide.Plugins
             if (multiplier != 1)
             {
                 hitInfo.damageTypes.Scale(Rust.DamageType.Decay, multiplier);
-                
+
                 // If no damage, return false to prevent the vehicle being considered attacked (which prevents repair)
                 if (!hitInfo.hasDamage)
                     return false;
@@ -46,10 +60,6 @@ namespace Oxide.Plugins
 
             return null;
         }
-
-        #endregion
-
-        #region Helper Methods
 
         private VehicleConfig GetVehicleConfig(BaseCombatEntity entity)
         {
