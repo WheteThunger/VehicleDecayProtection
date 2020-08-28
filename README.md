@@ -45,4 +45,4 @@ Default configuration:
 ```
 
 - `DecayMultiplierNearTC` -- Used to scale decay damage taken by vehicles near a tool cupboard (regardless of the owner). Defaults to `1` which has no effect. Set to `0` to completely nullify decay damage near a tool cupboard.
-- `ProtectionMinutesAfterUse` -- Used to prevent decay damage to vehicles this many minutes after they have been used (e.g., when their engine was last on). This mechanic already exists in vanilla Rust for most vehicles, but the protection window is usually just 10 minutes, so you can change this option to protect vehicles for longer. Note: Reducing this option below 10 minutes will have no effect.
+- `ProtectionMinutesAfterUse` -- Used to prevent decay damage to vehicles this many minutes after they have been used (e.g., when their engine was last on). This mechanic already exists in vanilla Rust for most vehicles, but the protection window is usually just 10 minutes, so you can change this option to protect vehicles for longer. Note: Reducing this option below 10 minutes will have no effect for most vehicles.
