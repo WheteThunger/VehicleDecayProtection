@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Oxide.Plugins
 {
-    [Info("Vehicle Decay Protection", "WhiteThunder", "1.0.1")]
+    [Info("Vehicle Decay Protection", "WhiteThunder", "1.0.2")]
     [Description("Protects vehicles from decay around tool cupboards and when recently used.")]
     internal class VehicleDecayProtection : CovalencePlugin
     {
@@ -53,9 +53,9 @@ namespace Oxide.Plugins
             {
                 hitInfo.damageTypes.Scale(Rust.DamageType.Decay, multiplier);
 
-                // If no damage, return false to prevent the vehicle being considered attacked (which prevents repair)
+                // If no damage, return true to prevent the vehicle being considered attacked (which prevents repair)
                 if (!hitInfo.hasDamage)
-                    return false;
+                    return true;
             }
 
             return null;
