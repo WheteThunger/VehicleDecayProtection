@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Oxide.Plugins
 {
-    [Info("Vehicle Decay Protection", "WhiteThunder", "1.0.2")]
+    [Info("Vehicle Decay Protection", "WhiteThunder", "1.1.0")]
     [Description("Protects vehicles from decay around tool cupboards and when recently used.")]
     internal class VehicleDecayProtection : CovalencePlugin
     {
@@ -28,6 +28,9 @@ namespace Oxide.Plugins
             ProcessDecayDamage(entity, hitInfo);
 
         private object OnEntityTakeDamage(BaseVehicleModule entity, HitInfo hitInfo) =>
+            ProcessDecayDamage(entity, hitInfo);
+
+        private object OnEntityTakeDamage(Kayak entity, HitInfo hitInfo) =>
             ProcessDecayDamage(entity, hitInfo);
 
         #endregion
@@ -66,6 +69,9 @@ namespace Oxide.Plugins
             if (entity is HotAirBalloon)
                 return PluginConfig.Vehicles.HotAirBalloon;
 
+            if (entity is Kayak)
+                return PluginConfig.Vehicles.Kayak;
+
             // Must go before MiniCopter
             if (entity is ScrapTransportHelicopter)
                 return PluginConfig.Vehicles.ScrapTransportHelicopter;
@@ -90,6 +96,9 @@ namespace Oxide.Plugins
         {
             if (entity is HotAirBalloon)
                 return (entity as HotAirBalloon).lastBlastTime;
+
+            if (entity is Kayak)
+                return Time.realtimeSinceStartup - (entity as Kayak).lastUsedTime;
 
             if (entity is MiniCopter)
                 return (entity as MiniCopter).lastEngineTime;
@@ -126,6 +135,9 @@ namespace Oxide.Plugins
         {
             [JsonProperty("HotAirBalloon")]
             public VehicleConfig HotAirBalloon = new VehicleConfig();
+
+            [JsonProperty("Kayak")]
+            public VehicleConfig Kayak = new VehicleConfig();
 
             [JsonProperty("Minicopter")]
             public VehicleConfig Minicopter = new VehicleConfig();

@@ -3,7 +3,7 @@
 Vehicle decay is already somewhat configurable in the vanilla game using the following server variables.
 - `minicopter.outsidedecayminutes` -- Affects Minicopters and Scrap Transport Helicopters
 - `modularcar.outsidedecayminutes` -- Affects Modular Cars
-- `motorrowboat.outsidedecayminutes` -- Affects Row Boats and RHIBs
+- `motorrowboat.outsidedecayminutes` -- Affects Row Boats, RHIBs, and Kayaks
 - `hotairballoon.outsidedecayminutes` -- Affects Hot Air Balloons
 
 If you want to simply disable decay for vehicles, then you can just set these to really high (i.e., `1000000`) and you don't need a plugin. Most vehicles also have an internal multiplier (usually `0.1`) that reduces decay damage while inside a building (i.e., under a roof).
@@ -17,6 +17,10 @@ Default configuration:
 {
   "Vehicles": {
     "HotAirBalloon": {
+      "DecayMultiplierNearTC": 1.0,
+      "ProtectionMinutesAfterUse": 10.0
+    },
+    "Kayak": {
       "DecayMultiplierNearTC": 1.0,
       "ProtectionMinutesAfterUse": 10.0
     },
