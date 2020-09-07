@@ -5,6 +5,7 @@ Vehicle decay is already somewhat configurable in the vanilla game using the fol
 - `modularcar.outsidedecayminutes` -- Affects Modular Cars
 - `motorrowboat.outsidedecayminutes` -- Affects Row Boats, RHIBs, and Kayaks
 - `hotairballoon.outsidedecayminutes` -- Affects Hot Air Balloons
+- `baseridableanimal.decayminutes` -- Affects Ridable Horses
 
 If you want to simply disable decay for vehicles, then you can just set these to really high (i.e., `1000000`) and you don't need a plugin. Most vehicles also have an internal multiplier (usually `0.1`) that reduces decay damage while inside a building (i.e., under a roof).
 
@@ -33,6 +34,10 @@ Default configuration:
       "ProtectionMinutesAfterUse": 10.0
     },
     "RHIB": {
+      "DecayMultiplierNearTC": 1.0,
+      "ProtectionMinutesAfterUse": 10.0
+    },
+    "RidableHorse": {
       "DecayMultiplierNearTC": 1.0,
       "ProtectionMinutesAfterUse": 10.0
     },

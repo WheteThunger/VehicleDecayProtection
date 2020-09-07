@@ -83,6 +83,9 @@ namespace Oxide.Plugins
             if (entity is RHIB)
                 return PluginConfig.Vehicles.RHIB;
 
+            if (entity is RidableHorse)
+                return PluginConfig.Vehicles.RidableHorse;
+
             if (entity is MotorRowboat)
                 return PluginConfig.Vehicles.Rowboat;
 
@@ -108,6 +111,9 @@ namespace Oxide.Plugins
 
             if (entity is MotorRowboat)
                 return (entity as MotorRowboat).lastUsedFuelTime;
+
+            if (entity is RidableHorse)
+                return (entity as RidableHorse).lastInputTime;
 
             if (entity is BaseVehicleModule)
             {
@@ -147,6 +153,9 @@ namespace Oxide.Plugins
 
             [JsonProperty("RHIB")]
             public VehicleConfig RHIB = new VehicleConfig();
+
+            [JsonProperty("RidableHorse")]
+            public VehicleConfig RidableHorse = new VehicleConfig();
 
             [JsonProperty("Rowboat")]
             public VehicleConfig Rowboat = new VehicleConfig();
