@@ -3,13 +3,15 @@ using UnityEngine;
 
 namespace Oxide.Plugins
 {
-    [Info("Vehicle Decay Protection", "WhiteThunder", "1.1.0")]
+    [Info("Vehicle Decay Protection", "WhiteThunder", "1.2.0")]
     [Description("Protects vehicles from decay around tool cupboards and when recently used.")]
     internal class VehicleDecayProtection : CovalencePlugin
     {
         #region Fields
 
         private VehicleDecayConfig PluginConfig;
+
+        private const string PermissionNoDecayAllVehicles = "vehicledecayprotection.nodecay.allvehicles";
 
         #endregion
 
@@ -18,6 +20,7 @@ namespace Oxide.Plugins
         private void Init()
         {
             PluginConfig = Config.ReadObject<VehicleDecayConfig>();
+            permission.RegisterPermission(PermissionNoDecayAllVehicles, this);
         }
 
         // Using separate hooks to theoretically improve performance by reducing hook calls
@@ -46,11 +49,23 @@ namespace Oxide.Plugins
 
             float multiplier = 1;
 
-            var lastUsedTime = GetVehicleLastUsedTime(entity);
-            if (lastUsedTime != -1 && Time.time < lastUsedTime + 60 * vehicleConfig.ProtectionMinutesAfterUse)
+            var ownerId = GetOwnerID(entity);
+            if (ownerId != 0 && permission.UserHasPermission(ownerId.ToString(), PermissionNoDecayAllVehicles))
+            {
                 multiplier = 0;
-            else if (entity.GetBuildingPrivilege() != null)
-                multiplier = vehicleConfig.DecayMultiplierNearTC;
+            }
+            else
+            {
+                var lastUsedTime = GetVehicleLastUsedTime(entity);
+                if (lastUsedTime != -1 && Time.time < lastUsedTime + 60 * vehicleConfig.ProtectionMinutesAfterUse)
+                {
+                    multiplier = 0;
+                }
+                else if (entity.GetBuildingPrivilege() != null)
+                {
+                    multiplier = vehicleConfig.DecayMultiplierNearTC;
+                }
+            }
 
             if (multiplier != 1)
             {
@@ -93,6 +108,16 @@ namespace Oxide.Plugins
                 return PluginConfig.Vehicles.ModularCar;
 
             return null;
+        }
+
+        private ulong GetOwnerID(BaseEntity entity)
+        {
+            if (entity is BaseVehicleModule)
+            {
+                var car = (entity as BaseVehicleModule).Vehicle as ModularCar;
+                return car != null ? car.OwnerID : 0;
+            }
+            return entity.OwnerID;
         }
 
         private float GetVehicleLastUsedTime(BaseCombatEntity entity)

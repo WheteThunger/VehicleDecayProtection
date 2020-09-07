@@ -1,4 +1,4 @@
-**Vehicle Decay Protection** protects vehicles from decay around tool cupboards and when recently used.
+**Vehicle Decay Protection** protects vehicles from decay around tool cupboards, when recently used or based on permissions.
 
 Vehicle decay is already somewhat configurable in the vanilla game using the following server variables.
 - `minicopter.outsidedecayminutes` -- Affects Minicopters and Scrap Transport Helicopters
@@ -9,7 +9,12 @@ Vehicle decay is already somewhat configurable in the vanilla game using the fol
 
 If you want to simply disable decay for vehicles, then you can just set these to really high (i.e., `1000000`) and you don't need a plugin. Most vehicles also have an internal multiplier (usually `0.1`) that reduces decay damage while inside a building (i.e., under a roof).
 
-If you want to selectively reduce or nullify decay damage only for vehicles that are near a tool cupboard, or for vehicles that have recently been used, then this plugin is for you.
+If you want to selectively reduce or nullify decay damage only for vehicles that are near a tool cupboard, for vehicles that have recently been used, or for vehicles owned by privileged players, then this plugin is for you.
+
+## Permissions
+
+- `vehicledecayprotection.nodecay.allvehicles` -- Causes vehicles owned by the granted player to not decay under any circumstances.
+  - Vehicle ownership is determined by the `OwnerID` property of the vehicle, which is usually a player's Steam ID, or `0` for no owner. Various plugins can spawn vehicles with a set owner, or allow the owner to change with certain events. Vehicles spawned by vanilla NPC vendors can have their owner set when purchased via the [Vehicle Vendor Options](https://umod.org/plugins/vehicle-vendor-options) plugin.
 
 ## Configuration
 
