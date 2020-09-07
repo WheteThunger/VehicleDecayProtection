@@ -13,8 +13,19 @@ If you want to selectively reduce or nullify decay damage only for vehicles that
 
 ## Permissions
 
-- `vehicledecayprotection.nodecay.allvehicles` -- Causes vehicles owned by the granted player to not decay under any circumstances.
-  - Vehicle ownership is determined by the `OwnerID` property of the vehicle, which is usually a player's Steam ID, or `0` for no owner. Various plugins can spawn vehicles with a set owner, or allow the owner to change with certain events. Vehicles spawned by vanilla NPC vendors can have their owner set when purchased via the [Vehicle Vendor Options](https://umod.org/plugins/vehicle-vendor-options) plugin.
+Granting the following permissions to a player will cause their owned vehicles to not decay at all. You can grant permissions by vehicle type or for all vehicles with a single permission.
+
+- `vehicledecayprotection.nodecay.allvehicles` (all in one)
+- `vehicledecayprotection.nodecay.hotairballoon`
+- `vehicledecayprotection.nodecay.kayak`
+- `vehicledecayprotection.nodecay.minicopter`
+- `vehicledecayprotection.nodecay.modularcar`
+- `vehicledecayprotection.nodecay.rhib`
+- `vehicledecayprotection.nodecay.ridablehorse`
+- `vehicledecayprotection.nodecay.rowboat`
+- `vehicledecayprotection.nodecay.scraptransporthelicopter`
+
+Vehicle ownership is determined by the `OwnerID` property of the vehicle, which is usually a player's Steam ID, or `0` for no owner. Various plugins can spawn vehicles with a set owner, or allow the owner to change with certain events. Vehicles spawned by vanilla NPC vendors can have their owner set when purchased via the [Vehicle Vendor Options](https://umod.org/plugins/vehicle-vendor-options) plugin.
 
 ## Configuration
 

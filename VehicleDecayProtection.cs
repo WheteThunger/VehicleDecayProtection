@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Oxide.Plugins
 {
-    [Info("Vehicle Decay Protection", "WhiteThunder", "1.2.0")]
+    [Info("Vehicle Decay Protection", "WhiteThunder", "1.3.0")]
     [Description("Protects vehicles from decay around tool cupboards and when recently used.")]
     internal class VehicleDecayProtection : CovalencePlugin
     {
@@ -11,7 +11,15 @@ namespace Oxide.Plugins
 
         private VehicleDecayConfig PluginConfig;
 
-        private const string PermissionNoDecayAllVehicles = "vehicledecayprotection.nodecay.allvehicles";
+        private const string Permission_NoDecay_AllVehicles = "vehicledecayprotection.nodecay.allvehicles";
+        private const string Permission_NoDecay_HotAirBalloon = "vehicledecayprotection.nodecay.hotairballoon";
+        private const string Permission_NoDecay_Kayak = "vehicledecayprotection.nodecay.kayak";
+        private const string Permission_NoDecay_MiniCopter = "vehicledecayprotection.nodecay.minicopter";
+        private const string Permission_NoDecay_ModularCar = "vehicledecayprotection.nodecay.modularcar";
+        private const string Permission_NoDecay_RHIB = "vehicledecayprotection.nodecay.rhib";
+        private const string Permission_NoDecay_RidableHorse = "vehicledecayprotection.nodecay.ridablehorse";
+        private const string Permission_NoDecay_Rowboat = "vehicledecayprotection.nodecay.rowboat";
+        private const string Permission_NoDecay_ScrapHeli = "vehicledecayprotection.nodecay.scraptransporthelicopter";
 
         #endregion
 
@@ -20,7 +28,15 @@ namespace Oxide.Plugins
         private void Init()
         {
             PluginConfig = Config.ReadObject<VehicleDecayConfig>();
-            permission.RegisterPermission(PermissionNoDecayAllVehicles, this);
+            permission.RegisterPermission(Permission_NoDecay_AllVehicles, this);
+            permission.RegisterPermission(Permission_NoDecay_HotAirBalloon, this);
+            permission.RegisterPermission(Permission_NoDecay_Kayak, this);
+            permission.RegisterPermission(Permission_NoDecay_MiniCopter, this);
+            permission.RegisterPermission(Permission_NoDecay_ModularCar, this);
+            permission.RegisterPermission(Permission_NoDecay_RHIB, this);
+            permission.RegisterPermission(Permission_NoDecay_RidableHorse, this);
+            permission.RegisterPermission(Permission_NoDecay_Rowboat, this);
+            permission.RegisterPermission(Permission_NoDecay_ScrapHeli, this);
         }
 
         // Using separate hooks to theoretically improve performance by reducing hook calls
@@ -30,10 +46,10 @@ namespace Oxide.Plugins
         private object OnEntityTakeDamage(HotAirBalloon entity, HitInfo hitInfo) =>
             ProcessDecayDamage(entity, hitInfo);
 
-        private object OnEntityTakeDamage(BaseVehicleModule entity, HitInfo hitInfo) =>
+        private object OnEntityTakeDamage(Kayak entity, HitInfo hitInfo) =>
             ProcessDecayDamage(entity, hitInfo);
 
-        private object OnEntityTakeDamage(Kayak entity, HitInfo hitInfo) =>
+        private object OnEntityTakeDamage(BaseVehicleModule entity, HitInfo hitInfo) =>
             ProcessDecayDamage(entity, hitInfo);
 
         #endregion
@@ -42,29 +58,23 @@ namespace Oxide.Plugins
 
         private object ProcessDecayDamage(BaseCombatEntity entity, HitInfo hitInfo)
         {
-            if (!hitInfo.damageTypes.Has(Rust.DamageType.Decay)) return null;
-
-            var vehicleConfig = GetVehicleConfig(entity);
-            if (vehicleConfig == null) return null;
+            if (entity == null || !hitInfo.damageTypes.Has(Rust.DamageType.Decay)) return null;
 
             float multiplier = 1;
 
-            var ownerId = GetOwnerID(entity);
-            if (ownerId != 0 && permission.UserHasPermission(ownerId.ToString(), PermissionNoDecayAllVehicles))
+            VehicleConfig vehicleConfig = null;
+            string vehicleSpecificNoDecayPerm = string.Empty;
+            float lastUsedTime = float.NegativeInfinity;
+            ulong ownerId = entity.OwnerID;
+
+            if (GetSupportedVehicleInformation(entity, ref vehicleConfig, ref vehicleSpecificNoDecayPerm, ref lastUsedTime, ref ownerId))
             {
-                multiplier = 0;
-            }
-            else
-            {
-                var lastUsedTime = GetVehicleLastUsedTime(entity);
-                if (lastUsedTime != -1 && Time.time < lastUsedTime + 60 * vehicleConfig.ProtectionMinutesAfterUse)
-                {
+                if (ownerId != 0 && HasPermissionAny(ownerId.ToString(), Permission_NoDecay_AllVehicles, vehicleSpecificNoDecayPerm))
                     multiplier = 0;
-                }
+                else if (lastUsedTime != float.NegativeInfinity && Time.time < lastUsedTime + 60 * vehicleConfig.ProtectionMinutesAfterUse)
+                    multiplier = 0;
                 else if (entity.GetBuildingPrivilege() != null)
-                {
                     multiplier = vehicleConfig.DecayMultiplierNearTC;
-                }
             }
 
             if (multiplier != 1)
@@ -79,75 +89,98 @@ namespace Oxide.Plugins
             return null;
         }
 
-        private VehicleConfig GetVehicleConfig(BaseCombatEntity entity)
+        // Returns false if vehicle is not supported
+        private bool GetSupportedVehicleInformation(BaseCombatEntity entity, ref VehicleConfig config, ref string noDecayPerm, ref float lastUsedTime, ref ulong ownerId)
         {
-            if (entity is HotAirBalloon)
-                return PluginConfig.Vehicles.HotAirBalloon;
+            var hab = entity as HotAirBalloon;
+            if (!ReferenceEquals(hab, null))
+            {
+                config = PluginConfig.Vehicles.HotAirBalloon;
+                noDecayPerm = Permission_NoDecay_HotAirBalloon;
+                lastUsedTime = hab.lastBlastTime;
+                return true;
+            }
 
-            if (entity is Kayak)
-                return PluginConfig.Vehicles.Kayak;
+            var kayak = entity as Kayak;
+            if (!ReferenceEquals(kayak, null))
+            {
+                config = PluginConfig.Vehicles.Kayak;
+                noDecayPerm = Permission_NoDecay_Kayak;
+                lastUsedTime = Time.realtimeSinceStartup - kayak.lastUsedTime;
+                return true;
+            }
 
             // Must go before MiniCopter
-            if (entity is ScrapTransportHelicopter)
-                return PluginConfig.Vehicles.ScrapTransportHelicopter;
+            var scrapHeli = entity as ScrapTransportHelicopter;
+            if (!ReferenceEquals(scrapHeli, null))
+            {
+                config = PluginConfig.Vehicles.ScrapTransportHelicopter;
+                noDecayPerm = Permission_NoDecay_ScrapHeli;
+                lastUsedTime = scrapHeli.lastEngineTime;
+                return true;
+            }
 
-            if (entity is MiniCopter)
-                return PluginConfig.Vehicles.Minicopter;
+            var minicopter = entity as MiniCopter;
+            if (!ReferenceEquals(minicopter, null))
+            {
+                config = PluginConfig.Vehicles.Minicopter;
+                noDecayPerm = Permission_NoDecay_MiniCopter;
+                lastUsedTime = minicopter.lastEngineTime;
+                return true;
+            }
 
             // Must go before MotorRowboat
-            if (entity is RHIB)
-                return PluginConfig.Vehicles.RHIB;
-
-            if (entity is RidableHorse)
-                return PluginConfig.Vehicles.RidableHorse;
-
-            if (entity is MotorRowboat)
-                return PluginConfig.Vehicles.Rowboat;
-
-            if (entity is BaseVehicleModule)
-                return PluginConfig.Vehicles.ModularCar;
-
-            return null;
-        }
-
-        private ulong GetOwnerID(BaseEntity entity)
-        {
-            if (entity is BaseVehicleModule)
+            var rhib = entity as RHIB;
+            if (!ReferenceEquals(rhib, null))
             {
-                var car = (entity as BaseVehicleModule).Vehicle as ModularCar;
-                return car != null ? car.OwnerID : 0;
-            }
-            return entity.OwnerID;
-        }
-
-        private float GetVehicleLastUsedTime(BaseCombatEntity entity)
-        {
-            if (entity is HotAirBalloon)
-                return (entity as HotAirBalloon).lastBlastTime;
-
-            if (entity is Kayak)
-                return Time.realtimeSinceStartup - (entity as Kayak).lastUsedTime;
-
-            if (entity is MiniCopter)
-                return (entity as MiniCopter).lastEngineTime;
-
-            if (entity is ModularCar)
-                return (entity as ModularCar).lastEngineTime;
-
-            if (entity is MotorRowboat)
-                return (entity as MotorRowboat).lastUsedFuelTime;
-
-            if (entity is RidableHorse)
-                return (entity as RidableHorse).lastInputTime;
-
-            if (entity is BaseVehicleModule)
-            {
-                var car = (entity as BaseVehicleModule).Vehicle as ModularCar;
-                if (car != null)
-                    return car.lastEngineTime;
+                config = PluginConfig.Vehicles.RHIB;
+                noDecayPerm = Permission_NoDecay_RHIB;
+                lastUsedTime = rhib.lastUsedFuelTime;
+                return true;
             }
 
-            return -1;
+            var horse = entity as RidableHorse;
+            if (!ReferenceEquals(horse, null))
+            {
+                config = PluginConfig.Vehicles.RidableHorse;
+                noDecayPerm = Permission_NoDecay_RidableHorse;
+                lastUsedTime = horse.lastInputTime;
+                return true;
+            }
+
+            var rowboat = entity as MotorRowboat;
+            if (!ReferenceEquals(rowboat, null))
+            {
+                config = PluginConfig.Vehicles.Rowboat;
+                noDecayPerm = Permission_NoDecay_Rowboat;
+                lastUsedTime = rowboat.lastUsedFuelTime;
+                return true;
+            }
+
+            var vehicleModule = entity as BaseVehicleModule;
+            if (!ReferenceEquals(vehicleModule, null))
+            {
+                config = PluginConfig.Vehicles.ModularCar;
+                noDecayPerm = Permission_NoDecay_ModularCar;
+                var car = vehicleModule.Vehicle as ModularCar;
+                if (car == null)
+                    return false;
+
+                lastUsedTime = car.lastEngineTime;
+                ownerId = car.OwnerID;
+                return true;
+            }
+
+            return false;
+        }
+
+        private bool HasPermissionAny(string userId, params string[] permissionNames)
+        {
+            foreach (var perm in permissionNames)
+                if (permission.UserHasPermission(userId, perm))
+                    return true;
+
+            return false;
         }
 
         #endregion
