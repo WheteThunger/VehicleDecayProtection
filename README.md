@@ -25,7 +25,7 @@ Granting the following permissions to a player will cause their owned vehicles t
 - `vehicledecayprotection.nodecay.rowboat`
 - `vehicledecayprotection.nodecay.scraptransporthelicopter`
 
-Vehicle ownership is determined by the `OwnerID` property of the vehicle, which is usually a player's Steam ID, or `0` for no owner. Various plugins can spawn vehicles with a set owner, or allow the owner to change with certain events. Vehicles spawned by vanilla NPC vendors can have their owner set when purchased via the [Vehicle Vendor Options](https://umod.org/plugins/vehicle-vendor-options) plugin.
+Vehicle ownership is determined by the `OwnerID` property of the vehicle, which is usually a player's Steam ID, or `0` for no owner. Various plugins can spawn vehicles with a set owner, or allow the owner to change with certain events, such as [Claim Vehicle Ownership](https://umod.org/plugins/claim-vehicle-ownership). Vehicles spawned by vanilla NPC vendors can have their owner set when purchased via the [Vehicle Vendor Options](https://umod.org/plugins/vehicle-vendor-options) plugin.
 
 ## Configuration
 
