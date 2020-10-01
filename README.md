@@ -39,7 +39,7 @@ Default configuration:
     },
     "Kayak": {
       "DecayMultiplierNearTC": 1.0,
-      "ProtectionMinutesAfterUse": 10.0
+      "ProtectionMinutesAfterUse": 45.0
     },
     "Minicopter": {
       "DecayMultiplierNearTC": 1.0,
@@ -51,7 +51,7 @@ Default configuration:
     },
     "RHIB": {
       "DecayMultiplierNearTC": 1.0,
-      "ProtectionMinutesAfterUse": 10.0
+      "ProtectionMinutesAfterUse": 45.0
     },
     "RidableHorse": {
       "DecayMultiplierNearTC": 1.0,
@@ -59,7 +59,7 @@ Default configuration:
     },
     "Rowboat": {
       "DecayMultiplierNearTC": 1.0,
-      "ProtectionMinutesAfterUse": 10.0
+      "ProtectionMinutesAfterUse": 45.0
     },
     "ScrapTransportHelicopter": {
       "DecayMultiplierNearTC": 1.0,
@@ -69,5 +69,5 @@ Default configuration:
 }
 ```
 
-- `DecayMultiplierNearTC` -- Used to scale decay damage taken by vehicles near a tool cupboard (regardless of the owner). Defaults to `1` which has no effect. Set to `0` to completely nullify decay damage near a tool cupboard.
-- `ProtectionMinutesAfterUse` -- Used to prevent decay damage to vehicles this many minutes after they have been used (e.g., when their engine was last on). This mechanic already exists in vanilla Rust for most vehicles, but the protection window is usually just 10 minutes, so you can change this option to protect vehicles for longer. Note: Reducing this option below 10 minutes will have no effect for most vehicles.
+- `DecayMultiplierNearTC` -- Used to scale decay damage taken by vehicles near a tool cupboard (regardless of the owner or upkeep). Defaults to `1` which has no effect. Set to `0` to completely nullify decay damage near a tool cupboard.
+- `ProtectionMinutesAfterUse` -- Used to prevent decay damage to vehicles this many minutes after they have been used (e.g., when their engine was last on). This mechanic already exists in vanilla Rust for most vehicles, but the protection window is usually just 10 minutes (45 for boats). You can change this option to protect vehicles for longer, but usually not shorter.

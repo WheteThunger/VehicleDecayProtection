@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Oxide.Plugins
 {
-    [Info("Vehicle Decay Protection", "WhiteThunder", "1.3.0")]
+    [Info("Vehicle Decay Protection", "WhiteThunder", "1.3.1")]
     [Description("Protects vehicles from decay around tool cupboards and when recently used.")]
     internal class VehicleDecayProtection : CovalencePlugin
     {
@@ -73,7 +73,7 @@ namespace Oxide.Plugins
                     multiplier = 0;
                 else if (lastUsedTime != float.NegativeInfinity && Time.time < lastUsedTime + 60 * vehicleConfig.ProtectionMinutesAfterUse)
                     multiplier = 0;
-                else if (entity.GetBuildingPrivilege() != null)
+                else if (vehicleConfig.DecayMultiplierNearTC != 1.0 && entity.GetBuildingPrivilege() != null)
                     multiplier = vehicleConfig.DecayMultiplierNearTC;
             }
 
@@ -106,7 +106,8 @@ namespace Oxide.Plugins
             {
                 config = PluginConfig.Vehicles.Kayak;
                 noDecayPerm = Permission_NoDecay_Kayak;
-                lastUsedTime = Time.realtimeSinceStartup - kayak.lastUsedTime;
+                //lastUsedTime = Time.realtimeSinceStartup - kayak.timeSinceLastUsed;
+                lastUsedTime = 0;
                 return true;
             }
 
@@ -135,7 +136,8 @@ namespace Oxide.Plugins
             {
                 config = PluginConfig.Vehicles.RHIB;
                 noDecayPerm = Permission_NoDecay_RHIB;
-                lastUsedTime = rhib.lastUsedFuelTime;
+                //lastUsedTime = Time.realtimeSinceStartup - rhib.timeSinceLastUsedFuel;
+                lastUsedTime = rhib.lastHadDriverTime;
                 return true;
             }
 
@@ -153,7 +155,8 @@ namespace Oxide.Plugins
             {
                 config = PluginConfig.Vehicles.Rowboat;
                 noDecayPerm = Permission_NoDecay_Rowboat;
-                lastUsedTime = rowboat.lastUsedFuelTime;
+                //lastUsedTime = Time.realtimeSinceStartup - rowboat.timeSinceLastUsedFuel;
+                lastUsedTime = rowboat.lastHadDriverTime;
                 return true;
             }
 
@@ -201,7 +204,7 @@ namespace Oxide.Plugins
             public VehicleConfig HotAirBalloon = new VehicleConfig();
 
             [JsonProperty("Kayak")]
-            public VehicleConfig Kayak = new VehicleConfig();
+            public VehicleConfig Kayak = new VehicleConfig() { ProtectionMinutesAfterUse = 45 };
 
             [JsonProperty("Minicopter")]
             public VehicleConfig Minicopter = new VehicleConfig();
@@ -210,13 +213,13 @@ namespace Oxide.Plugins
             public VehicleConfig ModularCar = new VehicleConfig();
 
             [JsonProperty("RHIB")]
-            public VehicleConfig RHIB = new VehicleConfig();
+            public VehicleConfig RHIB = new VehicleConfig() { ProtectionMinutesAfterUse = 45 };
 
             [JsonProperty("RidableHorse")]
             public VehicleConfig RidableHorse = new VehicleConfig();
 
             [JsonProperty("Rowboat")]
-            public VehicleConfig Rowboat = new VehicleConfig();
+            public VehicleConfig Rowboat = new VehicleConfig() { ProtectionMinutesAfterUse = 45 };
 
             [JsonProperty("ScrapTransportHelicopter")]
             public VehicleConfig ScrapTransportHelicopter = new VehicleConfig();
