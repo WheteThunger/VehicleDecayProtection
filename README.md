@@ -13,7 +13,7 @@ If you want to selectively reduce or nullify decay damage only for vehicles that
 
 ## Permissions
 
-Granting the following permissions to a player will cause their owned vehicles to not decay at all. You can grant permissions by vehicle type or for all vehicles with a single permission.
+Granting the following permissions to a player will cause their **owned** vehicles to not decay at all. You can grant permissions by vehicle type, or for all vehicles with a single permission.
 
 - `vehicledecayprotection.nodecay.allvehicles` (all in one)
 - `vehicledecayprotection.nodecay.hotairballoon`
@@ -25,7 +25,12 @@ Granting the following permissions to a player will cause their owned vehicles t
 - `vehicledecayprotection.nodecay.rowboat`
 - `vehicledecayprotection.nodecay.scraptransporthelicopter`
 
-Vehicle ownership is determined by the `OwnerID` property of the vehicle, which is usually a player's Steam ID, or `0` for no owner. Various plugins can spawn vehicles with a set owner, or allow the owner to change with certain events, such as [Claim Vehicle Ownership](https://umod.org/plugins/claim-vehicle-ownership). Vehicles spawned by vanilla NPC vendors can have their owner set when purchased via the [Vehicle Vendor Options](https://umod.org/plugins/vehicle-vendor-options) plugin.
+**Note: Except for Kayaks, vehicles are never assigned an owner by the vanilla game, so you will need another plugin to assign ownership to vehicles in order to benefit from the `nodecay` permissions.** Getting in a vehicle, driving it to your base, or locking it **do not** make you the owner.
+
+Vehicle ownership is determined by the `OwnerID` property of the vehicle, which is usually a player's Steam ID, or `0` for no owner. Most plugins that spawn vehicles for a player will assign that player as the owner. For vehicles spawned by the vanilla game, it's recommended to use one of the following plugins to grant vehicle ownership.
+
+- [Vehicle Vendor Options](https://umod.org/plugins/vehicle-vendor-options) - Automatically assigns ownership of vehicles purchased at vanilla NPC vendors if the player has permission
+- [Claim Vehicle Ownership](https://umod.org/plugins/claim-vehicle-ownership) - Allows players with permission to claim ownership of unowned vehicles using a command
 
 ## Configuration
 
