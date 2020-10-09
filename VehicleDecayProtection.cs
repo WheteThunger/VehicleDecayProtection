@@ -3,8 +3,8 @@ using UnityEngine;
 
 namespace Oxide.Plugins
 {
-    [Info("Vehicle Decay Protection", "WhiteThunder", "1.3.1")]
-    [Description("Protects vehicles from decay around tool cupboards and when recently used.")]
+    [Info("Vehicle Decay Protection", "WhiteThunder", "1.3.2")]
+    [Description("Protects vehicles from decay based on ownership and other factors.")]
     internal class VehicleDecayProtection : CovalencePlugin
     {
         #region Fields
@@ -106,8 +106,7 @@ namespace Oxide.Plugins
             {
                 config = PluginConfig.Vehicles.Kayak;
                 noDecayPerm = Permission_NoDecay_Kayak;
-                //lastUsedTime = Time.realtimeSinceStartup - kayak.timeSinceLastUsed;
-                lastUsedTime = 0;
+                lastUsedTime = Time.time - kayak.timeSinceLastUsed;
                 return true;
             }
 
@@ -136,8 +135,7 @@ namespace Oxide.Plugins
             {
                 config = PluginConfig.Vehicles.RHIB;
                 noDecayPerm = Permission_NoDecay_RHIB;
-                //lastUsedTime = Time.realtimeSinceStartup - rhib.timeSinceLastUsedFuel;
-                lastUsedTime = rhib.lastHadDriverTime;
+                lastUsedTime = Time.time - rhib.timeSinceLastUsedFuel;
                 return true;
             }
 
@@ -155,8 +153,7 @@ namespace Oxide.Plugins
             {
                 config = PluginConfig.Vehicles.Rowboat;
                 noDecayPerm = Permission_NoDecay_Rowboat;
-                //lastUsedTime = Time.realtimeSinceStartup - rowboat.timeSinceLastUsedFuel;
-                lastUsedTime = rowboat.lastHadDriverTime;
+                lastUsedTime = Time.time - rowboat.timeSinceLastUsedFuel;
                 return true;
             }
 

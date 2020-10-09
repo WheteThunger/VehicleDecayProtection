@@ -1,4 +1,12 @@
-**Vehicle Decay Protection** protects vehicles from decay around tool cupboards, when recently used or based on permissions.
+## Features
+
+**Vehicle Decay Protection** allows you to scale or nullify vehicle decay damage multiple ways.
+
+- Scale decay damage when a vehicle is near a tool cupboard
+- Nullify decay damage for a configurable amount of time after a vehicle has been used
+- Nullify decay damage if a vehicle is owned by a privileged player
+
+## No-Plugin Alternative
 
 Vehicle decay is already somewhat configurable in the vanilla game using the following server variables.
 - `minicopter.outsidedecayminutes` -- Affects Minicopters and Scrap Transport Helicopters
