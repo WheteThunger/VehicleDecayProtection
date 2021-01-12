@@ -4,7 +4,7 @@
 
 - Scale decay damage when a vehicle is near a tool cupboard
 - Nullify decay damage for a configurable amount of time after a vehicle has been used
-- Nullify decay damage if a vehicle is owned by a privileged player
+- Nullify decay damage if a vehicle is owned by a player with permission
 
 ## No-Plugin Alternative
 
@@ -21,7 +21,7 @@ If you want to selectively reduce or nullify decay damage only for vehicles that
 
 ## Permissions
 
-Granting the following permissions to a player will cause their **owned** vehicles to not decay at all. You can grant permissions by vehicle type, or for all vehicles with a single permission.
+Granting the following permissions to a player will cause their **owned** vehicles to not decay under any circumstances. You can grant permissions by vehicle type, or for all vehicles with a single permission.
 
 - `vehicledecayprotection.nodecay.allvehicles` (all in one)
 - `vehicledecayprotection.nodecay.hotairballoon`
@@ -38,7 +38,7 @@ Granting the following permissions to a player will cause their **owned** vehicl
 Vehicle ownership is determined by the `OwnerID` property of the vehicle, which is usually a player's Steam ID, or `0` for no owner. Most plugins that spawn vehicles for a player will assign that player as the owner. For vehicles spawned by the vanilla game, it's recommended to use one of the following plugins to grant vehicle ownership.
 
 - [Vehicle Vendor Options](https://umod.org/plugins/vehicle-vendor-options) - Automatically assigns ownership of vehicles purchased at vanilla NPC vendors if the player has permission
-- [Claim Vehicle Ownership](https://umod.org/plugins/claim-vehicle-ownership) - Allows players with permission to claim ownership of unowned vehicles using a command
+- [Claim Vehicle Ownership](https://umod.org/plugins/claim-vehicle-ownership) - Allows players with permission to claim ownership of unowned vehicles using a command on cooldown
 
 ## Configuration
 
@@ -82,5 +82,8 @@ Default configuration:
 }
 ```
 
-- `DecayMultiplierNearTC` -- Used to scale decay damage taken by vehicles near a tool cupboard (regardless of the owner or upkeep). Defaults to `1` which has no effect. Set to `0` to completely nullify decay damage near a tool cupboard.
-- `ProtectionMinutesAfterUse` -- Used to prevent decay damage to vehicles this many minutes after they have been used (e.g., when their engine was last on). This mechanic already exists in vanilla Rust for most vehicles, but the protection window is usually just 10 minutes (45 for boats). You can change this option to protect vehicles for longer, but usually not shorter.
+Each vehicle type has the following options:
+- `DecayMultiplierNearTC` -- Used to scale decay damage taken by vehicles near a tool cupboard, regardless of the vehicle owner or upkeep. Defaults to `1` which has no effect. Set to `0` to completely nullify decay damage near a tool cupboard.
+  - Note: This is a global setting per vehicle type that does not use any permissions.
+- `ProtectionMinutesAfterUse` -- Used to prevent decay damage to vehicles this many minutes after they have been used (e.g., when their engine was last on). This mechanic already exists in vanilla Rust for most vehicles, but the protection window is usually just 10 minutes (45 for boats). You can change this option to protect vehicles for longer, but setting it to a lower value than default will have no effect for most vehicles.
+  - Note: This is a global setting per vehicle type that does not use any permissions.
