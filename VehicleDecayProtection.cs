@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Oxide.Plugins
 {
-    [Info("Vehicle Decay Protection", "WhiteThunder", "1.3.2")]
+    [Info("Vehicle Decay Protection", "WhiteThunder", "1.3.3")]
     [Description("Protects vehicles from decay based on ownership and other factors.")]
     internal class VehicleDecayProtection : CovalencePlugin
     {
@@ -116,7 +116,7 @@ namespace Oxide.Plugins
             {
                 config = PluginConfig.Vehicles.ScrapTransportHelicopter;
                 noDecayPerm = Permission_NoDecay_ScrapHeli;
-                lastUsedTime = scrapHeli.lastEngineTime;
+                lastUsedTime = scrapHeli.lastEngineOnTime;
                 return true;
             }
 
@@ -125,7 +125,7 @@ namespace Oxide.Plugins
             {
                 config = PluginConfig.Vehicles.Minicopter;
                 noDecayPerm = Permission_NoDecay_MiniCopter;
-                lastUsedTime = minicopter.lastEngineTime;
+                lastUsedTime = minicopter.lastEngineOnTime;
                 return true;
             }
 
@@ -166,7 +166,7 @@ namespace Oxide.Plugins
                 if (car == null)
                     return false;
 
-                lastUsedTime = car.lastEngineTime;
+                lastUsedTime = car.lastEngineOnTime;
                 ownerId = car.OwnerID;
                 return true;
             }
