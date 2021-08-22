@@ -1,9 +1,13 @@
+## Notice of required Oxide version
+
+Vehicle Decay Protection v1.4.0 requires Oxide v2.0.5155 or newer. If you get a compile error when updating, you are running an older version of Oxide, meaning you will have to use an older version of the plugin until you update Oxide.
+
 ## Features
 
 **Vehicle Decay Protection** allows you to scale or nullify vehicle decay damage multiple ways.
 
-- Scale decay damage when a vehicle is near a tool cupboard
-- Nullify decay damage for a configurable amount of time after a vehicle has been used
+- Scale decay damage when a vehicle is near a tool cupboard (does not use permission)
+- Nullify decay damage for a configurable amount of time after a vehicle has been used (does not use permission)
 - Nullify decay damage if a vehicle is owned by a player with permission
 
 ## No-Plugin Alternative
@@ -38,6 +42,8 @@ Some vehicles also have an internal multiplier that reduces decay damage while i
 If you want to selectively reduce or nullify decay damage only for vehicles that are near a tool cupboard, for vehicles that have recently been used, or for vehicles owned by privileged players, then this plugin is for you.
 
 ## Permissions
+
+*Note: This plugin has three different capabilities for adjusting vehicle decay. Only one of those capabilities use permissions (no decay based on vehicle ownership). If you simply want to make vehicles not decay after they've been recently used, or if you want to prevent decay near TC, those features DO NOT use permissions, so simply skip ahead to configuration section of the plugin.*
 
 Granting the following permissions to a player will cause their **owned** vehicles to not decay under any circumstances. You can grant permissions by vehicle type, or for all vehicles with a single permission.
 
