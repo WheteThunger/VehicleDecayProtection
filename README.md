@@ -1,7 +1,3 @@
-## Notice of required Oxide version
-
-Vehicle Decay Protection v1.4.0 requires Oxide v2.0.5155 or newer. If you get a compile error when updating, you are running an older version of Oxide, meaning you will have to use an older version of the plugin until you update Oxide.
-
 ## Features
 
 **Vehicle Decay Protection** allows you to scale or nullify vehicle decay damage multiple ways.
