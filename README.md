@@ -2,6 +2,7 @@
 
 **Vehicle Decay Protection** allows you to scale or nullify vehicle decay damage multiple ways.
 
+- Scale decay damage when a vehicle is under a roof (does not use permission)
 - Scale decay damage when a vehicle is near a tool cupboard (does not use permission)
 - Nullify decay damage for a configurable amount of time after a vehicle has been used (does not use permission)
 - Nullify decay damage if a vehicle is owned by a player with permission
@@ -29,17 +30,15 @@ Other:
 
 If you want to simply disable decay for vehicles, then you can just set these to really high (i.e., `1000000`) and you don't need a plugin.
 
-Some vehicles also have an internal multiplier that reduces decay damage while inside a building.
-- Horses: 1/2 decay damage while under a roof
-- Modular Cars: 1/10 decay damage while under a roof
+Some vehicles also have an internal multiplier that reduces decay damage while under a roof.
+- Horses: `0.5x` decay damage while under a roof
+- Modular Cars: `0.1x` decay damage while under a roof
 - All Boats and Submarines: no decay damage while under a roof, if also in shallow water
 - Hot Air Balloons: no decay damage while under a roof
 
-If you want to selectively reduce or nullify decay damage only for vehicles that are near a tool cupboard, for vehicles that have recently been used, or for vehicles owned by privileged players, then this plugin is for you.
-
 ## Permissions
 
-*Note: This plugin has three different capabilities for adjusting vehicle decay. Only one of those capabilities use permissions (no decay based on vehicle ownership). If you simply want to make vehicles not decay after they've been recently used, or if you want to prevent decay near TC, those features DO NOT use permissions, so simply skip ahead to configuration section of the plugin.*
+*Note: This plugin has four different capabilities for adjusting vehicle decay. Only one of those capabilities uses permissions: no decay based on vehicle ownership. If you simply want to make vehicles not decay if they have been recently used, or if you want to scale decay for vehicles under a roof or near TC, those features DO NOT use permissions, so skip ahead to configuration section of the plugin.*
 
 Granting the following permissions to a player will cause their **owned** vehicles to not decay under any circumstances. You can grant permissions by vehicle type, or for all vehicles with a single permission.
 
@@ -65,46 +64,57 @@ Vehicle ownership is determined by the `OwnerID` property of the vehicle, which 
 ## Configuration
 
 Default configuration:
+
 ```json
 {
   "Vehicles": {
     "DuoSubmarine": {
+      "DecayMultiplierInside": 1.0,
       "DecayMultiplierNearTC": 1.0,
       "ProtectionMinutesAfterUse": 45.0
     },
     "HotAirBalloon": {
+      "DecayMultiplierInside": 1.0,
       "DecayMultiplierNearTC": 1.0,
       "ProtectionMinutesAfterUse": 10.0
     },
     "Kayak": {
+      "DecayMultiplierInside": 1.0,
       "DecayMultiplierNearTC": 1.0,
       "ProtectionMinutesAfterUse": 45.0
     },
     "Minicopter": {
+      "DecayMultiplierInside": 1.0,
       "DecayMultiplierNearTC": 1.0,
       "ProtectionMinutesAfterUse": 10.0
     },
     "ModularCar": {
+      "DecayMultiplierInside": 1.0,
       "DecayMultiplierNearTC": 1.0,
       "ProtectionMinutesAfterUse": 10.0
     },
     "RHIB": {
+      "DecayMultiplierInside": 1.0,
       "DecayMultiplierNearTC": 1.0,
       "ProtectionMinutesAfterUse": 45.0
     },
     "RidableHorse": {
+      "DecayMultiplierInside": 1.0,
       "DecayMultiplierNearTC": 1.0,
       "ProtectionMinutesAfterUse": 10.0
     },
     "Rowboat": {
+      "DecayMultiplierInside": 1.0,
       "DecayMultiplierNearTC": 1.0,
       "ProtectionMinutesAfterUse": 45.0
     },
     "ScrapTransportHelicopter": {
+      "DecayMultiplierInside": 1.0,
       "DecayMultiplierNearTC": 1.0,
       "ProtectionMinutesAfterUse": 10.0
     },
     "SoloSubmarine": {
+      "DecayMultiplierInside": 1.0,
       "DecayMultiplierNearTC": 1.0,
       "ProtectionMinutesAfterUse": 45.0
     }
@@ -112,8 +122,10 @@ Default configuration:
 }
 ```
 
+**Note: Configuration options are global settings per vehicle type and are not affected by permissions.**
+
 Each vehicle type has the following options:
-- `DecayMultiplierNearTC` -- Used to scale decay damage taken by vehicles near a tool cupboard, regardless of the vehicle owner or upkeep. Defaults to `1` which has no effect. Set to `0` to completely nullify decay damage near a tool cupboard.
-  - Note: This is a global setting per vehicle type that does not use any permissions.
-- `ProtectionMinutesAfterUse` -- Used to prevent decay damage to vehicles this many minutes after they have been used (e.g., when their engine was last on). This mechanic already exists in vanilla Rust for most vehicles, but the protection window is usually just 10 minutes (45 for boats and submarines). You can change this option to protect vehicles for longer, but setting it to a lower value than default will have no effect for most vehicles.
-  - Note: This is a global setting per vehicle type that does not use any permissions.
+- `DecayMultiplierInside` -- Determines how much to scale decay damage for vehicles that are inside (under a roof). Defaults to `1.0` which has no effect. Set to `0.0` to completely nullify decay damage to vehicles while they are inside.
+  - Note: This will stack with the vanilla multipliers. For example, cars already take `0.1x` decay damage while inside in vanilla Rust, so setting this multiplier to `0.1` for modular cars will make them take `0.01x` decay damage while inside.
+- `DecayMultiplierNearTC` -- Determines how much to scale decay damage for vehicles that are near any tool cupboard. Defaults to `1.0` which has no effect. Set to `0.0` to completely nullify decay damage.
+- `ProtectionMinutesAfterUse` -- Determines how many minutes to prevent decay damage to vehicles after they have been used (e.g., since when their engine was last on). This mechanic already exists in vanilla Rust for most vehicles, but the protection window is usually just 10 minutes (45 for boats and submarines). You can change this option to protect vehicles for longer, but setting it to a lower value than default will have no effect for most vehicles.

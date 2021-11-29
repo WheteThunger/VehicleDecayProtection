@@ -89,12 +89,24 @@ namespace Oxide.Plugins
 
                     damageMultiplier = 0;
                 }
-                else if (vehicleConfig.DecayMultiplierNearTC != 1.0 && entity.GetBuildingPrivilege() != null)
+                else
                 {
-                    if (_pluginConfig.Debug)
-                        LogWarning($"{entity.ShortPrefabName}: Multiplying decay damage due to being near TC: x{vehicleConfig.DecayMultiplierNearTC}.");
+                    if (vehicleConfig.DecayMultiplierInside != 1.0 && !entity.IsOutside())
+                    {
+                        if (_pluginConfig.Debug)
+                            LogWarning($"{entity.ShortPrefabName}: Multiplying decay damage due to being inside: x{vehicleConfig.DecayMultiplierInside}.");
 
-                    damageMultiplier = vehicleConfig.DecayMultiplierNearTC;
+                        damageMultiplier = vehicleConfig.DecayMultiplierInside;
+                    }
+
+                    // Skip building privilege check if damage multiplier is already 0.
+                    if (damageMultiplier != 0 && vehicleConfig.DecayMultiplierNearTC != 1.0 && entity.GetBuildingPrivilege() != null)
+                    {
+                        if (_pluginConfig.Debug)
+                            LogWarning($"{entity.ShortPrefabName}: Multiplying decay damage due to being near TC: x{vehicleConfig.DecayMultiplierNearTC}.");
+
+                        damageMultiplier *= vehicleConfig.DecayMultiplierNearTC;
+                    }
                 }
             }
 
@@ -276,6 +288,9 @@ namespace Oxide.Plugins
 
         private class VehicleConfig
         {
+            [JsonProperty("DecayMultiplierInside")]
+            public float DecayMultiplierInside = 1;
+
             [JsonProperty("DecayMultiplierNearTC")]
             public float DecayMultiplierNearTC = 1;
 
