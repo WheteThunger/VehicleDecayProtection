@@ -38,7 +38,7 @@ Some vehicles also have an internal multiplier that reduces decay damage while u
 
 ## Permissions
 
-*Note: This plugin has four different capabilities for adjusting vehicle decay. Only one of those capabilities uses permissions: no decay based on vehicle ownership. If you simply want to make vehicles not decay if they have been recently used, or if you want to scale decay for vehicles under a roof or near TC, those features DO NOT use permissions, so skip ahead to configuration section of the plugin.*
+*Note: This plugin has four different features for protecting vehicles against decay. Only one of those features uses permissions: no decay based on vehicle ownership. If you simply want to make vehicles not decay if they have been recently used, or if you want to scale decay for vehicles under a roof or near a tool cupboard, those features DO NOT use permissions, so skip ahead to the configuration section of the plugin.*
 
 Granting the following permissions to a player will cause their **owned** vehicles to not decay under any circumstances. You can grant permissions by vehicle type, or for all vehicles with a single permission.
 
@@ -54,12 +54,16 @@ Granting the following permissions to a player will cause their **owned** vehicl
 - `vehicledecayprotection.nodecay.scraptransporthelicopter`
 - `vehicledecayprotection.nodecay.solosubmarine`
 
-**Note: Except for Kayaks, vehicles are never assigned an owner by the vanilla game, so you will need another plugin to assign ownership to vehicles in order to benefit from the `nodecay` permissions.** Getting in a vehicle, driving it to your base, or locking it **do not** make you the owner.
+**Note: Vehicles are never assigned an owner by the vanilla game, with the exception of deployable vehicles like Kayaks, so you will need another plugin to assign ownership to most vehicles in order to benefit from the `nodecay` permissions.**
+
+### How vehicle ownership is determined
 
 Vehicle ownership is determined by the `OwnerID` property of the vehicle, which is usually a player's Steam ID, or `0` for no owner. Most plugins that spawn vehicles for a player will assign that player as the owner. For vehicles spawned by the vanilla game, it's recommended to use one of the following plugins to grant vehicle ownership.
 
 - [Vehicle Vendor Options](https://umod.org/plugins/vehicle-vendor-options) - Automatically assigns ownership of vehicles purchased at vanilla NPC vendors if the player has permission
 - [Claim Vehicle Ownership](https://umod.org/plugins/claim-vehicle-ownership) - Allows players with permission to claim ownership of unowned vehicles using a command on cooldown
+
+Alternatively, if the vehicle has a **code lock** or **key lock** attached to it via [Vehicle Deployed Locks](https://umod.org/plugins/vehicle-deployed-locks), this plugin will also check the `nodecay` permissions of the lock owner, if the lock is locked.
 
 ## Configuration
 

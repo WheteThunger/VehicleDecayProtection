@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace Oxide.Plugins
 {
-    [Info("Vehicle Decay Protection", "WhiteThunder", "1.4.0")]
+    [Info("Vehicle Decay Protection", "WhiteThunder", "1.5.0")]
     [Description("Protects vehicles from decay based on ownership and other factors.")]
     internal class VehicleDecayProtection : CovalencePlugin
     {
@@ -71,42 +71,50 @@ namespace Oxide.Plugins
             VehicleConfig vehicleConfig;
             string vehicleSpecificNoDecayPerm;
             float timeSinceLastUsed;
-            ulong ownerId;
+            BaseCombatEntity vehicle;
+            ulong lockOwnerId;
 
-            if (GetSupportedVehicleInformation(entity, out vehicleConfig, out vehicleSpecificNoDecayPerm, out timeSinceLastUsed, out ownerId))
+            if (!GetSupportedVehicleInformation(entity, out vehicleConfig, out vehicleSpecificNoDecayPerm, out timeSinceLastUsed, out vehicle))
+                return null;
+
+            if (timeSinceLastUsed != 0 && timeSinceLastUsed < 60 * vehicleConfig.ProtectionMinutesAfterUse)
             {
-                if (ownerId != 0 && HasPermissionAny(ownerId.ToString(), Permission_NoDecay_AllVehicles, vehicleSpecificNoDecayPerm))
+                if (_pluginConfig.Debug)
+                    LogWarning($"{entity.ShortPrefabName}: Nullifying decay damage due to being recently used: {(int)timeSinceLastUsed}s < {60 * vehicleConfig.ProtectionMinutesAfterUse}s.");
+
+                damageMultiplier = 0;
+            }
+            else if (UserHasPermission(vehicle.OwnerID, vehicleSpecificNoDecayPerm))
+            {
+                if (_pluginConfig.Debug)
+                    LogWarning($"{entity.ShortPrefabName}: Nullifying decay damage due to owner permission. OwnerId: {vehicle.OwnerID}.");
+
+                damageMultiplier = 0;
+            }
+            else if (LockOwnerHasPermission(vehicle, vehicleSpecificNoDecayPerm, out lockOwnerId))
+            {
+                if (_pluginConfig.Debug)
+                    LogWarning($"{entity.ShortPrefabName}: Nullifying decay damage due to lock owner permission. OwnerId: {lockOwnerId}.");
+
+                damageMultiplier = 0;
+            }
+            else
+            {
+                if (vehicleConfig.DecayMultiplierInside != 1.0 && !entity.IsOutside())
                 {
                     if (_pluginConfig.Debug)
-                        LogWarning($"{entity.ShortPrefabName}: Nullifying decay damage due to permission. OwnerId: {ownerId}.");
+                        LogWarning($"{entity.ShortPrefabName}: Multiplying decay damage due to being inside: x{vehicleConfig.DecayMultiplierInside}.");
 
-                    damageMultiplier = 0;
+                    damageMultiplier = vehicleConfig.DecayMultiplierInside;
                 }
-                else if (timeSinceLastUsed != 0 && timeSinceLastUsed < 60 * vehicleConfig.ProtectionMinutesAfterUse)
+
+                // Skip building privilege check if damage multiplier is already 0.
+                if (damageMultiplier != 0 && vehicleConfig.DecayMultiplierNearTC != 1.0 && entity.GetBuildingPrivilege() != null)
                 {
                     if (_pluginConfig.Debug)
-                        LogWarning($"{entity.ShortPrefabName}: Nullifying decay damage due to being recently used: {(int)timeSinceLastUsed}s < {60 * vehicleConfig.ProtectionMinutesAfterUse}s.");
+                        LogWarning($"{entity.ShortPrefabName}: Multiplying decay damage due to being near TC: x{vehicleConfig.DecayMultiplierNearTC}.");
 
-                    damageMultiplier = 0;
-                }
-                else
-                {
-                    if (vehicleConfig.DecayMultiplierInside != 1.0 && !entity.IsOutside())
-                    {
-                        if (_pluginConfig.Debug)
-                            LogWarning($"{entity.ShortPrefabName}: Multiplying decay damage due to being inside: x{vehicleConfig.DecayMultiplierInside}.");
-
-                        damageMultiplier = vehicleConfig.DecayMultiplierInside;
-                    }
-
-                    // Skip building privilege check if damage multiplier is already 0.
-                    if (damageMultiplier != 0 && vehicleConfig.DecayMultiplierNearTC != 1.0 && entity.GetBuildingPrivilege() != null)
-                    {
-                        if (_pluginConfig.Debug)
-                            LogWarning($"{entity.ShortPrefabName}: Multiplying decay damage due to being near TC: x{vehicleConfig.DecayMultiplierNearTC}.");
-
-                        damageMultiplier *= vehicleConfig.DecayMultiplierNearTC;
-                    }
+                    damageMultiplier *= vehicleConfig.DecayMultiplierNearTC;
                 }
             }
 
@@ -123,12 +131,12 @@ namespace Oxide.Plugins
         }
 
         // Returns false if vehicle is not supported.
-        private bool GetSupportedVehicleInformation(BaseCombatEntity entity, out VehicleConfig config, out string noDecayPerm, out float timeSinceLastUsed, out ulong ownerId)
+        private bool GetSupportedVehicleInformation(BaseCombatEntity entity, out VehicleConfig config, out string noDecayPerm, out float timeSinceLastUsed, out BaseCombatEntity vehicle)
         {
             config = null;
             noDecayPerm = string.Empty;
             timeSinceLastUsed = 0;
-            ownerId = entity.OwnerID;
+            vehicle = entity;
 
             var hab = entity as HotAirBalloon;
             if (!ReferenceEquals(hab, null))
@@ -205,7 +213,7 @@ namespace Oxide.Plugins
                     return false;
 
                 timeSinceLastUsed = Time.time - car.lastEngineOnTime;
-                ownerId = car.OwnerID;
+                vehicle = car;
                 return true;
             }
 
@@ -231,13 +239,27 @@ namespace Oxide.Plugins
             return false;
         }
 
-        private bool HasPermissionAny(string userId, params string[] permissionNames)
+        private bool UserHasPermission(ulong userId, string vehicleSpecificNoDecayPerm)
         {
-            foreach (var perm in permissionNames)
-                if (permission.UserHasPermission(userId, perm))
-                    return true;
+            if (userId == 0)
+                return false;
 
-            return false;
+            var userIdString = userId.ToString();
+
+            return permission.UserHasPermission(userIdString, Permission_NoDecay_AllVehicles)
+                || permission.UserHasPermission(userIdString, vehicleSpecificNoDecayPerm);
+        }
+
+        private bool LockOwnerHasPermission(BaseEntity vehicle, string vehicleSpecificNoDecayPerm, out ulong lockOwnerId)
+        {
+            lockOwnerId = 0;
+
+            var baseLock = vehicle.GetSlot(BaseEntity.Slot.Lock) as BaseLock;
+            if (baseLock == null || !baseLock.IsLocked() || baseLock.OwnerID == vehicle.OwnerID)
+                return false;
+
+            lockOwnerId = baseLock.OwnerID;
+            return UserHasPermission(baseLock.OwnerID, vehicleSpecificNoDecayPerm);
         }
 
         #endregion
