@@ -5,7 +5,7 @@
 - Scale decay damage when a vehicle is under a roof (does not use permission)
 - Scale decay damage when a vehicle is near a tool cupboard (does not use permission)
 - Nullify decay damage for a configurable amount of time after a vehicle has been used (does not use permission)
-- Nullify decay damage if a vehicle is owned by a player with permission
+- Nullify decay damage if a vehicle is owned by (or was locked by) a player with permission
 
 ## No-Plugin Alternative
 
@@ -23,6 +23,9 @@ Duo and Solo Submarines:
 - `basesubmarine.deepwaterdecayminutes`
 - `basesubmarine.outsidedecayminutes`
 
+Snowmobile and Tomaha:
+- `snowmobile.outsidedecayminutes`
+
 Other:
 - `baseridableanimal.decayminutes`
 - `hotairballoon.outsidedecayminutes`
@@ -35,6 +38,7 @@ Some vehicles also have an internal multiplier that reduces decay damage while u
 - Modular Cars: `0.1x` decay damage while under a roof
 - All Boats and Submarines: no decay damage while under a roof, if also in shallow water
 - Hot Air Balloons: no decay damage while under a roof
+- Snowmobiles and Tomahas: no decay damage while under a roof
 
 ## Permissions
 
@@ -52,7 +56,9 @@ Granting the following permissions to a player will cause their **owned** vehicl
 - `vehicledecayprotection.nodecay.ridablehorse`
 - `vehicledecayprotection.nodecay.rowboat`
 - `vehicledecayprotection.nodecay.scraptransporthelicopter`
+- `vehicledecayprotection.nodecay.snowmobile`
 - `vehicledecayprotection.nodecay.solosubmarine`
+- `vehicledecayprotection.nodecay.tomaha`
 
 **Note: Vehicles are never assigned an owner by the vanilla game, with the exception of deployable vehicles like Kayaks, so you will need another plugin to assign ownership to most vehicles in order to benefit from the `nodecay` permissions.**
 
@@ -117,7 +123,17 @@ Default configuration:
       "DecayMultiplierNearTC": 1.0,
       "ProtectionMinutesAfterUse": 10.0
     },
+    "Snowmobile": {
+      "DecayMultiplierInside": 1.0,
+      "DecayMultiplierNearTC": 1.0,
+      "ProtectionMinutesAfterUse": 45.0
+    },
     "SoloSubmarine": {
+      "DecayMultiplierInside": 1.0,
+      "DecayMultiplierNearTC": 1.0,
+      "ProtectionMinutesAfterUse": 45.0
+    },
+    "Tomaha": {
       "DecayMultiplierInside": 1.0,
       "DecayMultiplierNearTC": 1.0,
       "ProtectionMinutesAfterUse": 45.0
@@ -130,6 +146,6 @@ Default configuration:
 
 Each vehicle type has the following options:
 - `DecayMultiplierInside` -- Determines how much to scale decay damage for vehicles that are inside (under a roof). Defaults to `1.0` which has no effect. Set to `0.0` to completely nullify decay damage to vehicles while they are inside.
-  - Note: This will stack with the vanilla multipliers. For example, cars already take `0.1x` decay damage while inside in vanilla Rust, so setting this multiplier to `0.1` for modular cars will make them take `0.01x` decay damage while inside.
+  - Note: This will stack with the vanilla multipliers. For example, cars already take `0.1x` decay damage while inside in vanilla Rust, so setting this multiplier to `0.1` for modular cars will make them take `0.01x` decay damage while inside. This setting has no effect for Hot Air Balloons, Snowmobiles, or Tomahas since those vehicles don't take decay damage while under a roof.
 - `DecayMultiplierNearTC` -- Determines how much to scale decay damage for vehicles that are near any tool cupboard. Defaults to `1.0` which has no effect. Set to `0.0` to completely nullify decay damage.
-- `ProtectionMinutesAfterUse` -- Determines how many minutes to prevent decay damage to vehicles after they have been used (e.g., since when their engine was last on). This mechanic already exists in vanilla Rust for most vehicles, but the protection window is usually just 10 minutes (45 for boats and submarines). You can change this option to protect vehicles for longer, but setting it to a lower value than default will have no effect for most vehicles.
+- `ProtectionMinutesAfterUse` -- Determines how many minutes to prevent decay damage to vehicles after they have been used (e.g., since when their engine was last on). This mechanic already exists in vanilla Rust for most vehicles, where the protection window is usually either 10 or 45 minutes. You can change this option to protect vehicles for longer, but setting it to a lower value than default will have no effect for most vehicles.
