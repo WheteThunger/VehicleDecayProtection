@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace Oxide.Plugins
 {
-    [Info("Vehicle Decay Protection", "WhiteThunder", "1.5.0")]
+    [Info("Vehicle Decay Protection", "WhiteThunder", "1.6.0")]
     [Description("Protects vehicles from decay based on ownership and other factors.")]
     internal class VehicleDecayProtection : CovalencePlugin
     {
@@ -26,7 +26,12 @@ namespace Oxide.Plugins
         private const string Permission_NoDecay_RidableHorse = "vehicledecayprotection.nodecay.ridablehorse";
         private const string Permission_NoDecay_Rowboat = "vehicledecayprotection.nodecay.rowboat";
         private const string Permission_NoDecay_ScrapHeli = "vehicledecayprotection.nodecay.scraptransporthelicopter";
+        private const string Permission_NoDecay_Snowmobile = "vehicledecayprotection.nodecay.snowmobile";
         private const string Permission_NoDecay_SoloSub = "vehicledecayprotection.nodecay.solosubmarine";
+        private const string Permission_NoDecay_Tomaha = "vehicledecayprotection.nodecay.tomaha";
+
+        private const string SnowmobileShortPrefabName = "snowmobile";
+        private const string TomahaShortPrefabName = "tomahasnowmobile";
 
         #endregion
 
@@ -44,7 +49,9 @@ namespace Oxide.Plugins
             permission.RegisterPermission(Permission_NoDecay_RidableHorse, this);
             permission.RegisterPermission(Permission_NoDecay_Rowboat, this);
             permission.RegisterPermission(Permission_NoDecay_ScrapHeli, this);
+            permission.RegisterPermission(Permission_NoDecay_Snowmobile, this);
             permission.RegisterPermission(Permission_NoDecay_SoloSub, this);
+            permission.RegisterPermission(Permission_NoDecay_Tomaha, this);
         }
 
         // Using separate hooks to theoretically improve performance by reducing hook calls
@@ -236,6 +243,25 @@ namespace Oxide.Plugins
                 return true;
             }
 
+            var snowmobile = entity as Snowmobile;
+            if (!ReferenceEquals(snowmobile, null))
+            {
+                if (snowmobile.ShortPrefabName == SnowmobileShortPrefabName)
+                {
+                    config = _pluginConfig.Vehicles.Snowmobile;
+                    noDecayPerm = Permission_NoDecay_Snowmobile;
+                    timeSinceLastUsed = snowmobile.timeSinceLastUsed;
+                    return snowmobile;
+                }
+                if (snowmobile.ShortPrefabName == TomahaShortPrefabName)
+                {
+                    config = _pluginConfig.Vehicles.Tomaha;
+                    noDecayPerm = Permission_NoDecay_Tomaha;
+                    timeSinceLastUsed = snowmobile.timeSinceLastUsed;
+                    return snowmobile;
+                }
+            }
+
             return false;
         }
 
@@ -304,8 +330,14 @@ namespace Oxide.Plugins
             [JsonProperty("ScrapTransportHelicopter")]
             public VehicleConfig ScrapTransportHelicopter = new VehicleConfig();
 
+            [JsonProperty("Snowmobile")]
+            public VehicleConfig Snowmobile = new VehicleConfig() { ProtectionMinutesAfterUse = 45 };
+
             [JsonProperty("SoloSubmarine")]
             public VehicleConfig SoloSubmarine = new VehicleConfig() { ProtectionMinutesAfterUse = 45 };
+
+            [JsonProperty("Tomaha")]
+            public VehicleConfig Tomaha = new VehicleConfig { ProtectionMinutesAfterUse = 45 };
         }
 
         private class VehicleConfig
