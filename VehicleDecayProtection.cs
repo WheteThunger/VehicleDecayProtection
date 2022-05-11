@@ -1,6 +1,11 @@
-﻿using Newtonsoft.Json;
+﻿//#define DEBUG
+
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
+using Oxide.Core;
+using Oxide.Core.Libraries;
+using Rust;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,7 +13,7 @@ using UnityEngine;
 
 namespace Oxide.Plugins
 {
-    [Info("Vehicle Decay Protection", "WhiteThunder", "1.6.0")]
+    [Info("Vehicle Decay Protection", "WhiteThunder", "2.0.0")]
     [Description("Protects vehicles from decay based on ownership and other factors.")]
     internal class VehicleDecayProtection : CovalencePlugin
     {
@@ -17,21 +22,15 @@ namespace Oxide.Plugins
         private Configuration _pluginConfig;
 
         private const string Permission_NoDecay_AllVehicles = "vehicledecayprotection.nodecay.allvehicles";
-        private const string Permission_NoDecay_DuoSub = "vehicledecayprotection.nodecay.duosubmarine";
-        private const string Permission_NoDecay_HotAirBalloon = "vehicledecayprotection.nodecay.hotairballoon";
-        private const string Permission_NoDecay_Kayak = "vehicledecayprotection.nodecay.kayak";
-        private const string Permission_NoDecay_MiniCopter = "vehicledecayprotection.nodecay.minicopter";
-        private const string Permission_NoDecay_ModularCar = "vehicledecayprotection.nodecay.modularcar";
-        private const string Permission_NoDecay_RHIB = "vehicledecayprotection.nodecay.rhib";
-        private const string Permission_NoDecay_RidableHorse = "vehicledecayprotection.nodecay.ridablehorse";
-        private const string Permission_NoDecay_Rowboat = "vehicledecayprotection.nodecay.rowboat";
-        private const string Permission_NoDecay_ScrapHeli = "vehicledecayprotection.nodecay.scraptransporthelicopter";
-        private const string Permission_NoDecay_Snowmobile = "vehicledecayprotection.nodecay.snowmobile";
-        private const string Permission_NoDecay_SoloSub = "vehicledecayprotection.nodecay.solosubmarine";
-        private const string Permission_NoDecay_Tomaha = "vehicledecayprotection.nodecay.tomaha";
 
-        private const string SnowmobileShortPrefabName = "snowmobile";
-        private const string TomahaShortPrefabName = "tomahasnowmobile";
+        private const float VanillaDecaySeconds = 60f;
+
+        private readonly VehicleInfoManager _vehicleInfoManager;
+
+        public VehicleDecayProtection()
+        {
+            _vehicleInfoManager = new VehicleInfoManager(this);
+        }
 
         #endregion
 
@@ -40,240 +39,70 @@ namespace Oxide.Plugins
         private void Init()
         {
             permission.RegisterPermission(Permission_NoDecay_AllVehicles, this);
-            permission.RegisterPermission(Permission_NoDecay_DuoSub, this);
-            permission.RegisterPermission(Permission_NoDecay_HotAirBalloon, this);
-            permission.RegisterPermission(Permission_NoDecay_Kayak, this);
-            permission.RegisterPermission(Permission_NoDecay_MiniCopter, this);
-            permission.RegisterPermission(Permission_NoDecay_ModularCar, this);
-            permission.RegisterPermission(Permission_NoDecay_RHIB, this);
-            permission.RegisterPermission(Permission_NoDecay_RidableHorse, this);
-            permission.RegisterPermission(Permission_NoDecay_Rowboat, this);
-            permission.RegisterPermission(Permission_NoDecay_ScrapHeli, this);
-            permission.RegisterPermission(Permission_NoDecay_Snowmobile, this);
-            permission.RegisterPermission(Permission_NoDecay_SoloSub, this);
-            permission.RegisterPermission(Permission_NoDecay_Tomaha, this);
         }
 
-        // Using separate hooks to theoretically improve performance by reducing hook calls
-        private object OnEntityTakeDamage(BaseVehicle entity, HitInfo hitInfo) =>
-            ProcessDecayDamage(entity, hitInfo);
+        private void OnServerInitialized()
+        {
+            _vehicleInfoManager.OnServerInitialized(_pluginConfig);
 
-        private object OnEntityTakeDamage(HotAirBalloon entity, HitInfo hitInfo) =>
-            ProcessDecayDamage(entity, hitInfo);
+            foreach (var networkable in BaseNetworkable.serverEntities)
+            {
+                var entity = networkable as BaseEntity;
+                if (entity is BaseVehicle || entity is HotAirBalloon)
+                {
+                    HandleEntitySpawned(entity);
+                }
+            }
+        }
 
-        private object OnEntityTakeDamage(BaseVehicleModule entity, HitInfo hitInfo) =>
-            ProcessDecayDamage(entity, hitInfo);
+        private void Unload()
+        {
+            foreach (var networkable in BaseNetworkable.serverEntities)
+            {
+                var entity = networkable as BaseEntity;
+                if (entity is BaseVehicle || entity is HotAirBalloon)
+                {
+                    var vehicleInfo = _vehicleInfoManager.GetVehicleInfo(entity);
+                    if (vehicleInfo == null)
+                        continue;
+
+                    VehicleDecayReplacer.RemoveFromEntity(entity);
+                }
+            }
+        }
+
+        // Using separate hooks to improve performance by reducing hook calls.
+        private void OnEntitySpawned(BaseVehicle entity) => HandleEntitySpawned(entity);
+        private void OnEntitySpawned(HotAirBalloon entity) => HandleEntitySpawned(entity);
 
         #endregion
 
         #region Helper Methods
 
-        private bool? ProcessDecayDamage(BaseCombatEntity entity, HitInfo hitInfo)
+        private void HandleEntitySpawned(BaseEntity entity)
         {
-            if (entity == null || !hitInfo.damageTypes.Has(Rust.DamageType.Decay))
-                return null;
+            var vehicleInfo = _vehicleInfoManager.GetVehicleInfo(entity);
+            if (vehicleInfo == null)
+                return;
 
-            float damageMultiplier = 1;
-
-            VehicleConfig vehicleConfig;
-            string vehicleSpecificNoDecayPerm;
-            float timeSinceLastUsed;
-            BaseCombatEntity vehicle;
-            ulong lockOwnerId;
-
-            if (!GetSupportedVehicleInformation(entity, out vehicleConfig, out vehicleSpecificNoDecayPerm, out timeSinceLastUsed, out vehicle))
-                return null;
-
-            if (timeSinceLastUsed != 0 && timeSinceLastUsed < 60 * vehicleConfig.ProtectionMinutesAfterUse)
-            {
-                if (_pluginConfig.Debug)
-                    LogWarning($"{entity.ShortPrefabName}: Nullifying decay damage due to being recently used: {(int)timeSinceLastUsed}s < {60 * vehicleConfig.ProtectionMinutesAfterUse}s.");
-
-                damageMultiplier = 0;
-            }
-            else if (UserHasPermission(vehicle.OwnerID, vehicleSpecificNoDecayPerm))
-            {
-                if (_pluginConfig.Debug)
-                    LogWarning($"{entity.ShortPrefabName}: Nullifying decay damage due to owner permission. OwnerId: {vehicle.OwnerID}.");
-
-                damageMultiplier = 0;
-            }
-            else if (LockOwnerHasPermission(vehicle, vehicleSpecificNoDecayPerm, out lockOwnerId))
-            {
-                if (_pluginConfig.Debug)
-                    LogWarning($"{entity.ShortPrefabName}: Nullifying decay damage due to lock owner permission. OwnerId: {lockOwnerId}.");
-
-                damageMultiplier = 0;
-            }
-            else
-            {
-                if (vehicleConfig.DecayMultiplierInside != 1.0 && !entity.IsOutside())
-                {
-                    if (_pluginConfig.Debug)
-                        LogWarning($"{entity.ShortPrefabName}: Multiplying decay damage due to being inside: x{vehicleConfig.DecayMultiplierInside}.");
-
-                    damageMultiplier = vehicleConfig.DecayMultiplierInside;
-                }
-
-                // Skip building privilege check if damage multiplier is already 0.
-                if (damageMultiplier != 0 && vehicleConfig.DecayMultiplierNearTC != 1.0 && entity.GetBuildingPrivilege() != null)
-                {
-                    if (_pluginConfig.Debug)
-                        LogWarning($"{entity.ShortPrefabName}: Multiplying decay damage due to being near TC: x{vehicleConfig.DecayMultiplierNearTC}.");
-
-                    damageMultiplier *= vehicleConfig.DecayMultiplierNearTC;
-                }
-            }
-
-            if (damageMultiplier != 1)
-            {
-                hitInfo.damageTypes.Scale(Rust.DamageType.Decay, damageMultiplier);
-
-                // If no damage, return true to prevent the vehicle being considered attacked (which would have prevented repair).
-                if (!hitInfo.hasDamage)
-                    return true;
-            }
-
-            return null;
+            VehicleDecayReplacer.AddToEntity(entity, vehicleInfo);
         }
 
-        // Returns false if vehicle is not supported.
-        private bool GetSupportedVehicleInformation(BaseCombatEntity entity, out VehicleConfig config, out string noDecayPerm, out float timeSinceLastUsed, out BaseCombatEntity vehicle)
+        private bool UserHasPermission(UserData userData, string perm)
         {
-            config = null;
-            noDecayPerm = string.Empty;
-            timeSinceLastUsed = 0;
-            vehicle = entity;
-
-            var hab = entity as HotAirBalloon;
-            if (!ReferenceEquals(hab, null))
-            {
-                config = _pluginConfig.Vehicles.HotAirBalloon;
-                noDecayPerm = Permission_NoDecay_HotAirBalloon;
-                timeSinceLastUsed = Time.time - hab.lastBlastTime;
-                return true;
-            }
-
-            var kayak = entity as Kayak;
-            if (!ReferenceEquals(kayak, null))
-            {
-                config = _pluginConfig.Vehicles.Kayak;
-                noDecayPerm = Permission_NoDecay_Kayak;
-                timeSinceLastUsed = kayak.timeSinceLastUsed;
-                return true;
-            }
-
-            // Must go before MiniCopter.
-            var scrapHeli = entity as ScrapTransportHelicopter;
-            if (!ReferenceEquals(scrapHeli, null))
-            {
-                config = _pluginConfig.Vehicles.ScrapTransportHelicopter;
-                noDecayPerm = Permission_NoDecay_ScrapHeli;
-                timeSinceLastUsed = Time.time - scrapHeli.lastEngineOnTime;
-                return true;
-            }
-
-            var minicopter = entity as MiniCopter;
-            if (!ReferenceEquals(minicopter, null))
-            {
-                config = _pluginConfig.Vehicles.Minicopter;
-                noDecayPerm = Permission_NoDecay_MiniCopter;
-                timeSinceLastUsed = Time.time - minicopter.lastEngineOnTime;
-                return true;
-            }
-
-            // Must go before MotorRowboat.
-            var rhib = entity as RHIB;
-            if (!ReferenceEquals(rhib, null))
-            {
-                config = _pluginConfig.Vehicles.RHIB;
-                noDecayPerm = Permission_NoDecay_RHIB;
-                timeSinceLastUsed = rhib.timeSinceLastUsedFuel;
-                return true;
-            }
-
-            var horse = entity as RidableHorse;
-            if (!ReferenceEquals(horse, null))
-            {
-                config = _pluginConfig.Vehicles.RidableHorse;
-                noDecayPerm = Permission_NoDecay_RidableHorse;
-                timeSinceLastUsed = Time.time - horse.lastInputTime;
-                return true;
-            }
-
-            var rowboat = entity as MotorRowboat;
-            if (!ReferenceEquals(rowboat, null))
-            {
-                config = _pluginConfig.Vehicles.Rowboat;
-                noDecayPerm = Permission_NoDecay_Rowboat;
-                timeSinceLastUsed = rowboat.timeSinceLastUsedFuel;
-                return true;
-            }
-
-            var vehicleModule = entity as BaseVehicleModule;
-            if (!ReferenceEquals(vehicleModule, null))
-            {
-                config = _pluginConfig.Vehicles.ModularCar;
-                noDecayPerm = Permission_NoDecay_ModularCar;
-                var car = vehicleModule.Vehicle as ModularCar;
-                if (car == null)
-                    return false;
-
-                timeSinceLastUsed = Time.time - car.lastEngineOnTime;
-                vehicle = car;
-                return true;
-            }
-
-            // Must go before BaseSubmarine.
-            var duoSub = entity as SubmarineDuo;
-            if (!ReferenceEquals(duoSub, null))
-            {
-                config = _pluginConfig.Vehicles.DuoSubmarine;
-                noDecayPerm = Permission_NoDecay_DuoSub;
-                timeSinceLastUsed = duoSub.timeSinceLastUsed;
-                return true;
-            }
-
-            var soloSub = entity as BaseSubmarine;
-            if (!ReferenceEquals(soloSub, null))
-            {
-                config = _pluginConfig.Vehicles.SoloSubmarine;
-                noDecayPerm = Permission_NoDecay_SoloSub;
-                timeSinceLastUsed = soloSub.timeSinceLastUsed;
-                return true;
-            }
-
-            var snowmobile = entity as Snowmobile;
-            if (!ReferenceEquals(snowmobile, null))
-            {
-                if (snowmobile.ShortPrefabName == SnowmobileShortPrefabName)
-                {
-                    config = _pluginConfig.Vehicles.Snowmobile;
-                    noDecayPerm = Permission_NoDecay_Snowmobile;
-                    timeSinceLastUsed = snowmobile.timeSinceLastUsed;
-                    return snowmobile;
-                }
-                if (snowmobile.ShortPrefabName == TomahaShortPrefabName)
-                {
-                    config = _pluginConfig.Vehicles.Tomaha;
-                    noDecayPerm = Permission_NoDecay_Tomaha;
-                    timeSinceLastUsed = snowmobile.timeSinceLastUsed;
-                    return snowmobile;
-                }
-            }
-
-            return false;
+            return userData.Perms.Contains(perm)
+                || permission.GroupsHavePermission(userData.Groups, perm);
         }
 
-        private bool UserHasPermission(ulong userId, string vehicleSpecificNoDecayPerm)
+        private bool OwnerHasPermission(ulong ownerId, string vehicleSpecificNoDecayPerm)
         {
-            if (userId == 0)
+            if (ownerId == 0)
                 return false;
 
-            var userIdString = userId.ToString();
+            var userData = permission.GetUserData(ownerId.ToString());
 
-            return permission.UserHasPermission(userIdString, Permission_NoDecay_AllVehicles)
-                || permission.UserHasPermission(userIdString, vehicleSpecificNoDecayPerm);
+            return UserHasPermission(userData, Permission_NoDecay_AllVehicles)
+                || UserHasPermission(userData, vehicleSpecificNoDecayPerm);
         }
 
         private bool LockOwnerHasPermission(BaseEntity vehicle, string vehicleSpecificNoDecayPerm, out ulong lockOwnerId)
@@ -285,7 +114,530 @@ namespace Oxide.Plugins
                 return false;
 
             lockOwnerId = baseLock.OwnerID;
-            return UserHasPermission(baseLock.OwnerID, vehicleSpecificNoDecayPerm);
+            return OwnerHasPermission(baseLock.OwnerID, vehicleSpecificNoDecayPerm);
+        }
+
+        public static void LogInfo(string message) => Interface.Oxide.LogInfo($"[Vehicle Decay Protection] {message}");
+        public static void LogError(string message) => Interface.Oxide.LogError($"[Vehicle Decay Protection] {message}");
+        public static void LogWarning(string message) => Interface.Oxide.LogWarning($"[Vehicle Decay Protection] {message}");
+
+        private static void SetupDecayTick(FacepunchBehaviour component, Action action, float time)
+        {
+            component.InvokeRandomized(action, UnityEngine.Random.Range(time / 2f, time), time, time / 10f);
+        }
+
+        private static bool WasRecentlyUsed(BaseEntity entity, VehicleInfo vehicleInfo)
+        {
+            var timeSinceLastUsed = vehicleInfo.GetTimeSinceLastUsed(entity);
+            if (timeSinceLastUsed >= 60 * vehicleInfo.VehicleConfig.ProtectionMinutesAfterUse)
+                return false;
+
+#if DEBUG
+            LogWarning($"{entity.ShortPrefabName} :: Recently used :: {(int)timeSinceLastUsed}s < {60 * vehicleInfo.VehicleConfig.ProtectionMinutesAfterUse}s");
+#endif
+            return true;
+        }
+
+        private static bool VehicleHasPermission(VehicleDecayProtection pluginInstance, BaseEntity entity, VehicleInfo vehicleInfo)
+        {
+            if (!pluginInstance._pluginConfig.EnablePermission)
+                return false;
+
+            pluginInstance.TrackStart();
+            var ownerHasPermission = pluginInstance.OwnerHasPermission(entity.OwnerID, vehicleInfo.Permission);
+            pluginInstance.TrackEnd();
+
+            if (ownerHasPermission)
+            {
+#if DEBUG
+                LogWarning($"{entity.ShortPrefabName} :: Owner has permission :: {entity.OwnerID}");
+#endif
+                return true;
+            }
+
+            ulong lockOwnerId;
+            pluginInstance.TrackStart();
+            var lockOwnerHasPermission = pluginInstance.LockOwnerHasPermission(entity, vehicleInfo.Permission, out lockOwnerId);
+            pluginInstance.TrackEnd();
+
+            if (lockOwnerHasPermission)
+            {
+#if DEBUG
+                LogWarning($"{entity.ShortPrefabName} :: Lock owner has permission :: {lockOwnerId}");
+#endif
+                return true;
+            }
+
+            return false;
+        }
+
+        private static float GetInsideMultiplier(BaseEntity entity, VehicleInfo vehicleInfo, out bool isOutside, bool forceOutsideCheck)
+        {
+            isOutside = true;
+
+            var vehicleConfig = vehicleInfo.VehicleConfig;
+            if (forceOutsideCheck || vehicleConfig.DecayMultiplierInside != 1f)
+            {
+                isOutside = entity.IsOutside();
+            }
+
+            if (vehicleConfig.DecayMultiplierInside == 1f || isOutside)
+                return 1f;
+
+#if DEBUG
+            LogWarning($"{entity.ShortPrefabName} :: Inside :: x{vehicleConfig.DecayMultiplierInside}");
+#endif
+            return vehicleConfig.DecayMultiplierInside;
+        }
+
+        private static float GetNearTCMultiplier(VehicleDecayProtection pluginInstance, BaseEntity entity, VehicleInfo vehicleInfo)
+        {
+            var vehicleConfig = vehicleInfo.VehicleConfig;
+            if (vehicleConfig.DecayMultiplierNearTC == 1f)
+                return 1f;
+
+            pluginInstance.TrackStart();
+            var hasBuildingPrivilege = entity.GetBuildingPrivilege() != null;
+            pluginInstance.TrackEnd();
+
+            if (!hasBuildingPrivilege)
+                return 1f;
+
+#if DEBUG
+            LogWarning($"{entity.ShortPrefabName} :: Near TC :: x{vehicleConfig.DecayMultiplierNearTC}");
+#endif
+            return vehicleConfig.DecayMultiplierNearTC;
+        }
+
+        private static float GetLocationMultiplier(VehicleDecayProtection pluginInstance, BaseEntity entity, VehicleInfo vehicleInfo, out bool isOutside, bool forceOutsideCheck = false)
+        {
+            var multiplier = GetInsideMultiplier(entity, vehicleInfo, out isOutside, forceOutsideCheck);
+            if (multiplier == 0f)
+                return 0f;
+
+            multiplier *= GetNearTCMultiplier(pluginInstance, entity, vehicleInfo);
+            if (multiplier == 0f)
+                return 0f;
+
+            return multiplier;
+        }
+
+        private static float GetLocationMultiplier(VehicleDecayProtection pluginInstance, BaseEntity entity, VehicleInfo vehicleInfo)
+        {
+            bool isOutside;
+            return GetLocationMultiplier(pluginInstance, entity, vehicleInfo, out isOutside);
+        }
+
+        private static void DoDecayDamage(BaseCombatEntity entity, VehicleInfo vehicleInfo, float fraction)
+        {
+            entity.Hurt(entity.MaxHealth() * fraction * vehicleInfo.GetTimeMultiplier(), DamageType.Decay, entity, useProtection: false);
+        }
+
+        private static void MinicopterDecay(VehicleDecayProtection pluginInstance, MiniCopter miniCopter, VehicleInfo vehicleInfo)
+        {
+            if (miniCopter.healthFraction == 0f
+                || miniCopter.IsOn()
+                || WasRecentlyUsed(miniCopter, vehicleInfo)
+                || VehicleHasPermission(pluginInstance, miniCopter, vehicleInfo))
+                return;
+
+            bool isOutside;
+            var multiplier = GetLocationMultiplier(pluginInstance, miniCopter, vehicleInfo, out isOutside, forceOutsideCheck: true);
+            if (multiplier == 0f)
+                return;
+
+            var decayMinutes = isOutside ? MiniCopter.outsidedecayminutes : MiniCopter.insidedecayminutes;
+            DoDecayDamage(miniCopter, vehicleInfo, multiplier / decayMinutes);
+        }
+
+        private static void SnowmobileDecay(VehicleDecayProtection pluginInstance, Snowmobile snowmobile, VehicleInfo vehicleInfo)
+        {
+            if (snowmobile.IsDead()
+                || WasRecentlyUsed(snowmobile, vehicleInfo)
+                || VehicleHasPermission(pluginInstance, snowmobile, vehicleInfo))
+                return;
+
+            var multiplier = GetLocationMultiplier(pluginInstance, snowmobile, vehicleInfo);
+            if (multiplier == 0f)
+                return;
+
+            DoDecayDamage(snowmobile, vehicleInfo, multiplier / Snowmobile.outsideDecayMinutes);
+        }
+
+        private static void WaterVehicleDecay(VehicleDecayProtection pluginInstance, BaseCombatEntity waterVehicle, VehicleInfo vehicleInfo, float outsideDecayMinutes, float deepWaterDecayMinutes)
+        {
+            if (waterVehicle.healthFraction == 0f
+                || WasRecentlyUsed(waterVehicle, vehicleInfo)
+                || VehicleHasPermission(pluginInstance, waterVehicle, vehicleInfo))
+                return;
+
+            var multiplier = GetLocationMultiplier(pluginInstance, waterVehicle, vehicleInfo);
+            if (multiplier == 0f)
+                return;
+
+            var decayMinutes = outsideDecayMinutes;
+            var overallWaterDepth = WaterLevel.GetOverallWaterDepth(waterVehicle.transform.position);
+            if (overallWaterDepth > 12f)
+            {
+                var divisor = Mathf.Lerp(0.1f, 1f, Mathf.InverseLerp(12f, 16f, overallWaterDepth));
+                decayMinutes = Mathf.Min(decayMinutes, deepWaterDecayMinutes / divisor);
+            }
+
+            DoDecayDamage(waterVehicle, vehicleInfo, multiplier / decayMinutes);
+        }
+
+        #endregion
+
+        #region Vehicle Decay Component
+
+        private class VehicleDecayReplacer : FacepunchBehaviour
+        {
+            public static void AddToEntity(BaseEntity entity, VehicleInfo vehicleInfo)
+            {
+                var component = entity.gameObject.AddComponent<VehicleDecayReplacer>();
+                component._entity = entity;
+                component._vehicleInfo = vehicleInfo;
+
+                // Cancel vanilla decay.
+                entity.CancelInvoke(vehicleInfo.GetVanillaDecayMethod(entity));
+
+                // Enable custom decay.
+                SetupDecayTick(component, component.DecayTick, vehicleInfo.VehicleConfig.DecayIntervalSeconds);
+            }
+
+            public static void RemoveFromEntity(BaseEntity entity)
+            {
+                var component = entity.gameObject.GetComponent<VehicleDecayReplacer>();
+                if (component == null)
+                    return;
+
+                // Enable vanilla decay.
+                SetupDecayTick(entity, component._vehicleInfo.GetVanillaDecayMethod(entity), VanillaDecaySeconds);
+
+                // Cancel custom decay.
+                DestroyImmediate(component);
+            }
+
+            private BaseEntity _entity;
+            private VehicleInfo _vehicleInfo;
+
+            private void DecayTick()
+            {
+                _vehicleInfo.DecayTick(_entity, _vehicleInfo);
+            }
+        }
+
+        #endregion
+
+        #region Vehicle Info
+
+        private class VehicleInfo
+        {
+            public string VehicleType;
+            public VehicleConfig VehicleConfig;
+            public string[] PrefabPaths;
+            public string Permission { get; private set; }
+            public uint[] PrefabIds { get; private set; }
+
+            public Action<BaseEntity, VehicleInfo> DecayTick = (entity, vehicleInfo) =>
+            {
+                throw new NotImplementedException();
+            };
+
+            public Func<BaseEntity, float> GetTimeSinceLastUsed = (entity) =>
+            {
+                throw new NotImplementedException();
+            };
+
+            public Func<BaseEntity, Action> GetVanillaDecayMethod = (enitty) =>
+            {
+                throw new NotImplementedException();
+            };
+
+            public void OnServerInitialized(VehicleDecayProtection pluginInstance)
+            {
+                Permission = $"{nameof(VehicleDecayProtection)}.nodecay.{VehicleType}".ToLower();
+                pluginInstance.permission.RegisterPermission(Permission, pluginInstance);
+
+                var prefabIds = new List<uint>(PrefabPaths.Length);
+
+                foreach (var prefabName in PrefabPaths)
+                {
+                    var prefabId = StringPool.Get(prefabName);
+                    if (prefabId != 0)
+                    {
+                        prefabIds.Add(prefabId);
+                    }
+                    else
+                    {
+                        LogError($"Invalid prefab. Please alert the plugin maintainer -- {prefabName}");
+                    }
+                }
+
+                PrefabIds = prefabIds.ToArray();
+            }
+
+            public float GetTimeMultiplier()
+            {
+                return VehicleConfig.DecayIntervalSeconds / VanillaDecaySeconds;
+            }
+        }
+
+        private class VehicleInfoManager
+        {
+            private VehicleDecayProtection _pluginInstance;
+
+            private readonly Dictionary<uint, VehicleInfo> _prefabIdToVehicleInfo = new Dictionary<uint, VehicleInfo>();
+
+            public VehicleInfoManager(VehicleDecayProtection pluginInstance)
+            {
+                _pluginInstance = pluginInstance;
+            }
+
+            public void OnServerInitialized(Configuration pluginConfig)
+            {
+                var allVehicles = new VehicleInfo[]
+                {
+                    new VehicleInfo
+                    {
+                        VehicleType = "duosubmarine",
+                        PrefabPaths = new string[] { "assets/content/vehicles/submarine/submarineduo.entity.prefab" },
+                        VehicleConfig = pluginConfig.Vehicles.DuoSubmarine,
+                        GetTimeSinceLastUsed = (entity) => (entity as SubmarineDuo).timeSinceLastUsed,
+                        GetVanillaDecayMethod = (entity) => (entity as SubmarineDuo).SubmarineDecay,
+                        DecayTick = (entity, vehicleInfo) => WaterVehicleDecay(
+                            _pluginInstance,
+                            entity as SubmarineDuo,
+                            vehicleInfo,
+                            BaseSubmarine.outsidedecayminutes,
+                            BaseSubmarine.deepwaterdecayminutes
+                        )
+                    },
+                    new VehicleInfo
+                    {
+                        VehicleType = "hotairballoon",
+                        PrefabPaths = new string[] { "assets/prefabs/deployable/hot air balloon/hotairballoon.prefab" },
+                        VehicleConfig = pluginConfig.Vehicles.HotAirBalloon,
+                        GetTimeSinceLastUsed = (entity) => UnityEngine.Time.time - (entity as HotAirBalloon).lastBlastTime,
+                        GetVanillaDecayMethod = (entity) => (entity as HotAirBalloon).DecayTick,
+                        DecayTick = (entity, vehicleInfo) =>
+                        {
+                            var hab = entity as HotAirBalloon;
+
+                            if (hab.healthFraction == 0f
+                                || hab.IsFullyInflated
+                                || WasRecentlyUsed(hab, vehicleInfo)
+                                || VehicleHasPermission(_pluginInstance, hab, vehicleInfo))
+                                return;
+
+                            var multiplier = GetLocationMultiplier(_pluginInstance, hab, vehicleInfo);
+                            if (multiplier == 0f)
+                                return;
+
+                            DoDecayDamage(hab, vehicleInfo, multiplier / HotAirBalloon.outsidedecayminutes);
+                        }
+                    },
+                    new VehicleInfo
+                    {
+                        VehicleType = "kayak",
+                        PrefabPaths = new string[] { "assets/content/vehicles/boats/kayak/kayak.prefab" },
+                        VehicleConfig = pluginConfig.Vehicles.Kayak,
+                        GetTimeSinceLastUsed = (entity) => (entity as Kayak).timeSinceLastUsed,
+                        GetVanillaDecayMethod = (entity) => (entity as Kayak).BoatDecay,
+                        DecayTick = (entity, vehicleInfo) => WaterVehicleDecay(
+                            _pluginInstance,
+                            entity as Kayak,
+                            vehicleInfo,
+                            MotorRowboat.outsidedecayminutes,
+                            MotorRowboat.deepwaterdecayminutes
+                        ),
+                    },
+                    new VehicleInfo
+                    {
+                        VehicleType = "minicopter",
+                        PrefabPaths = new string[] { "assets/content/vehicles/minicopter/minicopter.entity.prefab" },
+                        VehicleConfig = pluginConfig.Vehicles.Minicopter,
+                        GetTimeSinceLastUsed = (entity) => UnityEngine.Time.time - (entity as MiniCopter).lastEngineOnTime,
+                        GetVanillaDecayMethod = (entity) => (entity as MiniCopter).DecayTick,
+                        DecayTick = (entity, vehicleInfo) => MinicopterDecay(_pluginInstance, entity as MiniCopter, vehicleInfo),
+                    },
+                    new VehicleInfo
+                    {
+                        VehicleType = "modularcar",
+                        PrefabPaths = new string[]
+                        {
+                            "assets/content/vehicles/modularcar/car_chassis_2module.entity.prefab",
+                            "assets/content/vehicles/modularcar/car_chassis_3module.entity.prefab",
+                            "assets/content/vehicles/modularcar/car_chassis_4module.entity.prefab",
+                            "assets/content/vehicles/modularcar/2module_car_spawned.entity.prefab",
+                            "assets/content/vehicles/modularcar/3module_car_spawned.entity.prefab",
+                            "assets/content/vehicles/modularcar/4module_car_spawned.entity.prefab",
+                        },
+                        VehicleConfig = pluginConfig.Vehicles.ModularCar,
+                        GetTimeSinceLastUsed = (entity) => UnityEngine.Time.time - (entity as ModularCar).lastEngineOnTime,
+                        GetVanillaDecayMethod = (entity) => (entity as ModularCar).DecayTick,
+                        DecayTick = (entity, vehicleInfo) =>
+                        {
+                            var car = entity as ModularCar;
+
+                            if (car.IsDestroyed
+                                || car.IsOn()
+                                || car.immuneToDecay
+                                || WasRecentlyUsed(car, vehicleInfo)
+                                || VehicleHasPermission(_pluginInstance, car, vehicleInfo))
+                                return;
+
+                            if (car.IsDead())
+                            {
+                                var numModules = Mathf.Max(1, car.AttachedModuleEntities.Count);
+                                car.DoDecayDamage(120f / numModules * vehicleInfo.GetTimeMultiplier());
+                                return;
+                            }
+
+                            var multiplier = GetLocationMultiplier(_pluginInstance, car, vehicleInfo);
+                            if (multiplier == 0f)
+                                return;
+
+                            var health = car.HasAnyModules
+                                ? car.AttachedModuleEntities.Max(module => module.MaxHealth())
+                                : car.MaxHealth();
+
+                            car.DoDecayDamage(health * vehicleInfo.GetTimeMultiplier() * multiplier / ModularCar.outsidedecayminutes);
+                        }
+                    },
+                    new VehicleInfo
+                    {
+                        VehicleType = "rhib",
+                        PrefabPaths = new string[] { "assets/content/vehicles/boats/rhib/rhib.prefab" },
+                        VehicleConfig = pluginConfig.Vehicles.RHIB,
+                        GetTimeSinceLastUsed = (entity) => (entity as RHIB).timeSinceLastUsedFuel,
+                        GetVanillaDecayMethod = (entity) => (entity as RHIB).BoatDecay,
+                        DecayTick = (entity, vehicleInfo) =>
+                        {
+                            var rhib = entity as MotorRowboat;
+                            if (rhib.dying)
+                                return;
+
+                            WaterVehicleDecay(
+                                _pluginInstance,
+                                rhib,
+                                vehicleInfo,
+                                MotorRowboat.outsidedecayminutes,
+                                MotorRowboat.deepwaterdecayminutes
+                            );
+                        }
+                    },
+                    new VehicleInfo
+                    {
+                        VehicleType = "ridablehorse",
+                        PrefabPaths = new string[] { "assets/rust.ai/nextai/testridablehorse.prefab" },
+                        VehicleConfig = pluginConfig.Vehicles.RidableHorse,
+                        GetTimeSinceLastUsed = (entity) => UnityEngine.Time.time - (entity as RidableHorse).lastInputTime,
+                        GetVanillaDecayMethod = (entity) => (entity as RidableHorse).AnimalDecay,
+                        DecayTick = (entity, vehicleInfo) =>
+                        {
+                            var horse = entity as RidableHorse;
+
+                            if (horse.healthFraction == 0f
+                                || horse.IsDestroyed
+                                || WasRecentlyUsed(horse, vehicleInfo)
+                                || UnityEngine.Time.time < horse.lastEatTime + 600f
+                                || horse.IsForSale()
+                                || UnityEngine.Time.time < horse.nextDecayTime
+                                || VehicleHasPermission(_pluginInstance, horse, vehicleInfo))
+                                return;
+
+                            var multiplier = GetLocationMultiplier(_pluginInstance, horse, vehicleInfo);
+                            if (multiplier == 0f)
+                                return;
+
+                            DoDecayDamage(horse, vehicleInfo, multiplier / BaseRidableAnimal.decayminutes);
+                        }
+                    },
+                    new VehicleInfo
+                    {
+                        VehicleType = "rowboat",
+                        PrefabPaths = new string[] { "assets/content/vehicles/boats/rowboat/rowboat.prefab" },
+                        VehicleConfig = pluginConfig.Vehicles.Rowboat,
+                        GetTimeSinceLastUsed = (entity) => (entity as MotorRowboat).timeSinceLastUsedFuel,
+                        GetVanillaDecayMethod = (entity) => (entity as MotorRowboat).BoatDecay,
+                        DecayTick = (entity, vehicleInfo) =>
+                        {
+                            var rowBoat = entity as MotorRowboat;
+                            if (rowBoat.dying)
+                                return;
+
+                            WaterVehicleDecay(
+                                _pluginInstance,
+                                rowBoat,
+                                vehicleInfo,
+                                MotorRowboat.outsidedecayminutes,
+                                MotorRowboat.deepwaterdecayminutes
+                            );
+                        }
+                    },
+                    new VehicleInfo
+                    {
+                        VehicleType = "scraptransporthelicopter",
+                        PrefabPaths = new string[] { "assets/content/vehicles/scrap heli carrier/scraptransporthelicopter.prefab" },
+                        VehicleConfig = pluginConfig.Vehicles.ScrapTransportHelicopter,
+                        GetTimeSinceLastUsed = (entity) => UnityEngine.Time.time - (entity as ScrapTransportHelicopter).lastEngineOnTime,
+                        GetVanillaDecayMethod = (entity) => (entity as ScrapTransportHelicopter).DecayTick,
+                        DecayTick = (entity, vehicleInfo) => MinicopterDecay(_pluginInstance, entity as ScrapTransportHelicopter, vehicleInfo),
+                    },
+                    new VehicleInfo
+                    {
+                        VehicleType = "snowmobile",
+                        PrefabPaths = new string[] { "assets/content/vehicles/snowmobiles/snowmobile.prefab" },
+                        VehicleConfig = pluginConfig.Vehicles.Snowmobile,
+                        GetTimeSinceLastUsed = (entity) => (entity as Snowmobile).timeSinceLastUsed,
+                        GetVanillaDecayMethod = (entity) => (entity as Snowmobile).SnowmobileDecay,
+                        DecayTick = (entity, vehicleInfo) => SnowmobileDecay(_pluginInstance, entity as Snowmobile, vehicleInfo),
+                    },
+                    new VehicleInfo
+                    {
+                        VehicleType = "solosubmarine",
+                        PrefabPaths = new string[] { "assets/content/vehicles/submarine/submarinesolo.entity.prefab" },
+                        VehicleConfig = pluginConfig.Vehicles.SoloSubmarine,
+                        GetTimeSinceLastUsed = (entity) => (entity as BaseSubmarine).timeSinceLastUsed,
+                        GetVanillaDecayMethod = (entity) => (entity as BaseSubmarine).SubmarineDecay,
+                        DecayTick = (entity, vehicleInfo) => WaterVehicleDecay(
+                            _pluginInstance,
+                            entity as BaseSubmarine,
+                            vehicleInfo,
+                            BaseSubmarine.outsidedecayminutes,
+                            BaseSubmarine.deepwaterdecayminutes
+                        ),
+                    },
+                    new VehicleInfo
+                    {
+                        VehicleType = "tomaha",
+                        PrefabPaths = new string[] { "assets/content/vehicles/snowmobiles/tomahasnowmobile.prefab" },
+                        VehicleConfig = pluginConfig.Vehicles.Tomaha,
+                        GetTimeSinceLastUsed = (entity) => (entity as Snowmobile).timeSinceLastUsed,
+                        GetVanillaDecayMethod = (entity) => (entity as Snowmobile).SnowmobileDecay,
+                        DecayTick = (entity, vehicleInfo) => SnowmobileDecay(_pluginInstance, entity as Snowmobile, vehicleInfo),
+                    },
+                };
+
+                foreach (var vehicleInfo in allVehicles)
+                {
+                    vehicleInfo.OnServerInitialized(_pluginInstance);
+
+                    foreach (var prefabId in vehicleInfo.PrefabIds)
+                    {
+                        _prefabIdToVehicleInfo[prefabId] = vehicleInfo;
+                    }
+                }
+            }
+
+            public VehicleInfo GetVehicleInfo(BaseEntity entity)
+            {
+                VehicleInfo vehicleInfo;
+                return _prefabIdToVehicleInfo.TryGetValue(entity.prefabID, out vehicleInfo)
+                    ? vehicleInfo
+                    : null;
+            }
         }
 
         #endregion
@@ -294,6 +646,9 @@ namespace Oxide.Plugins
 
         private class Configuration : SerializableConfiguration
         {
+            [JsonProperty("EnablePermission")]
+            public bool EnablePermission = true;
+
             [JsonProperty("Vehicles")]
             public VehicleConfigMap Vehicles = new VehicleConfigMap();
 
@@ -304,40 +659,88 @@ namespace Oxide.Plugins
         private class VehicleConfigMap
         {
             [JsonProperty("DuoSubmarine")]
-            public VehicleConfig DuoSubmarine = new VehicleConfig() { ProtectionMinutesAfterUse = 45 };
+            public VehicleConfig DuoSubmarine = new VehicleConfig
+            {
+                DecayMultiplierInside = 0f,
+                ProtectionMinutesAfterUse = 45,
+            };
 
             [JsonProperty("HotAirBalloon")]
-            public VehicleConfig HotAirBalloon = new VehicleConfig();
+            public VehicleConfig HotAirBalloon = new VehicleConfig
+            {
+                DecayMultiplierInside = 0f,
+                ProtectionMinutesAfterUse = 10,
+            };
 
             [JsonProperty("Kayak")]
-            public VehicleConfig Kayak = new VehicleConfig() { ProtectionMinutesAfterUse = 45 };
+            public VehicleConfig Kayak = new VehicleConfig
+            {
+                DecayMultiplierInside = 0f,
+                ProtectionMinutesAfterUse = 45,
+            };
 
             [JsonProperty("Minicopter")]
-            public VehicleConfig Minicopter = new VehicleConfig();
+            public VehicleConfig Minicopter = new VehicleConfig
+            {
+                DecayMultiplierInside = 1f,
+                ProtectionMinutesAfterUse = 10,
+            };
 
             [JsonProperty("ModularCar")]
-            public VehicleConfig ModularCar = new VehicleConfig();
+            public VehicleConfig ModularCar = new VehicleConfig
+            {
+                DecayMultiplierInside = 0.1f,
+                ProtectionMinutesAfterUse = 10,
+            };
 
             [JsonProperty("RHIB")]
-            public VehicleConfig RHIB = new VehicleConfig() { ProtectionMinutesAfterUse = 45 };
+            public VehicleConfig RHIB = new VehicleConfig
+            {
+                DecayMultiplierInside = 0f,
+                ProtectionMinutesAfterUse = 45,
+            };
 
             [JsonProperty("RidableHorse")]
-            public VehicleConfig RidableHorse = new VehicleConfig();
+            public VehicleConfig RidableHorse = new VehicleConfig
+            {
+                DecayMultiplierInside = 0.5f,
+                ProtectionMinutesAfterUse = 10,
+            };
 
             [JsonProperty("Rowboat")]
-            public VehicleConfig Rowboat = new VehicleConfig() { ProtectionMinutesAfterUse = 45 };
+            public VehicleConfig Rowboat = new VehicleConfig
+            {
+                DecayMultiplierInside = 0f,
+                ProtectionMinutesAfterUse = 45,
+            };
 
             [JsonProperty("ScrapTransportHelicopter")]
-            public VehicleConfig ScrapTransportHelicopter = new VehicleConfig();
+            public VehicleConfig ScrapTransportHelicopter = new VehicleConfig
+            {
+                DecayMultiplierInside = 1f,
+                ProtectionMinutesAfterUse = 10,
+            };
 
             [JsonProperty("Snowmobile")]
-            public VehicleConfig Snowmobile = new VehicleConfig() { ProtectionMinutesAfterUse = 45 };
+            public VehicleConfig Snowmobile = new VehicleConfig
+            {
+                DecayMultiplierInside = 0f,
+                ProtectionMinutesAfterUse = 45,
+            };
 
             [JsonProperty("SoloSubmarine")]
-            public VehicleConfig SoloSubmarine = new VehicleConfig() { ProtectionMinutesAfterUse = 45 };
+            public VehicleConfig SoloSubmarine = new VehicleConfig
+            {
+                DecayMultiplierInside = 0f,
+                ProtectionMinutesAfterUse = 45,
+            };
 
             [JsonProperty("Tomaha")]
-            public VehicleConfig Tomaha = new VehicleConfig { ProtectionMinutesAfterUse = 45 };
+            public VehicleConfig Tomaha = new VehicleConfig
+            {
+                DecayMultiplierInside = 0f,
+                ProtectionMinutesAfterUse = 45,
+            };
         }
 
         private class VehicleConfig
@@ -350,6 +753,9 @@ namespace Oxide.Plugins
 
             [JsonProperty("ProtectionMinutesAfterUse")]
             public float ProtectionMinutesAfterUse = 10;
+
+            [JsonProperty("DecayIntervalSeconds")]
+            public float DecayIntervalSeconds = 60;
         }
 
         private Configuration GetDefaultConfig() => new Configuration();

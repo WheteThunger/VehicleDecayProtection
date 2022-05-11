@@ -5,11 +5,11 @@
 - Scale decay damage when a vehicle is under a roof (does not use permission)
 - Scale decay damage when a vehicle is near a tool cupboard (does not use permission)
 - Nullify decay damage for a configurable amount of time after a vehicle has been used (does not use permission)
-- Nullify decay damage if a vehicle is owned by (or was locked by) a player with permission
+- Nullify decay damage if a vehicle is owned by (or had a lock deployed onto it by) a player with permission
 
 ## No-Plugin Alternative
 
-Vehicle decay is already somewhat configurable in the vanilla game using the following server variables.
+Vehicle decay is already somewhat configurable in the vanilla game using the following convars.
 
 Minicopters and Scrap Transport Helicopters:
 - `minicopter.insidedecayminutes`
@@ -20,8 +20,8 @@ Row Boats, RHIBs, and Kayaks:
 - `motorrowboat.deepwaterdecayminutes`
 
 Duo and Solo Submarines:
-- `basesubmarine.deepwaterdecayminutes`
 - `basesubmarine.outsidedecayminutes`
+- `basesubmarine.deepwaterdecayminutes`
 
 Snowmobile and Tomaha:
 - `snowmobile.outsidedecayminutes`
@@ -36,7 +36,8 @@ If you want to simply disable decay for vehicles, then you can just set these to
 Some vehicles also have an internal multiplier that reduces decay damage while under a roof.
 - Horses: `0.5x` decay damage while under a roof
 - Modular Cars: `0.1x` decay damage while under a roof
-- All Boats and Submarines: no decay damage while under a roof, if also in shallow water
+- All Boats and Submarines: no decay damage while under a roof
+  - In vanilla, they also have to be in shallow water, but this plugin removes that restriction
 - Hot Air Balloons: no decay damage while under a roof
 - Snowmobiles and Tomahas: no decay damage while under a roof
 
@@ -73,79 +74,102 @@ Alternatively, if the vehicle has a **code lock** or **key lock** attached to it
 
 ## Configuration
 
-Default configuration:
+Default configuration (equivalent to vanilla):
 
 ```json
 {
+  "EnablePermission": true,
   "Vehicles": {
     "DuoSubmarine": {
-      "DecayMultiplierInside": 1.0,
+      "DecayMultiplierInside": 0.0,
       "DecayMultiplierNearTC": 1.0,
-      "ProtectionMinutesAfterUse": 45.0
+      "ProtectionMinutesAfterUse": 45.0,
+      "DecayIntervalSeconds": 60.0
     },
     "HotAirBalloon": {
-      "DecayMultiplierInside": 1.0,
+      "DecayMultiplierInside": 0.0,
       "DecayMultiplierNearTC": 1.0,
-      "ProtectionMinutesAfterUse": 10.0
+      "ProtectionMinutesAfterUse": 10.0,
+      "DecayIntervalSeconds": 60.0
     },
     "Kayak": {
-      "DecayMultiplierInside": 1.0,
+      "DecayMultiplierInside": 0.0,
       "DecayMultiplierNearTC": 1.0,
-      "ProtectionMinutesAfterUse": 45.0
+      "ProtectionMinutesAfterUse": 45.0,
+      "DecayIntervalSeconds": 60.0
     },
     "Minicopter": {
       "DecayMultiplierInside": 1.0,
       "DecayMultiplierNearTC": 1.0,
-      "ProtectionMinutesAfterUse": 10.0
+      "ProtectionMinutesAfterUse": 10.0,
+      "DecayIntervalSeconds": 60.0
     },
     "ModularCar": {
-      "DecayMultiplierInside": 1.0,
+      "DecayMultiplierInside": 0.1,
       "DecayMultiplierNearTC": 1.0,
-      "ProtectionMinutesAfterUse": 10.0
+      "ProtectionMinutesAfterUse": 10.0,
+      "DecayIntervalSeconds": 60.0
     },
     "RHIB": {
-      "DecayMultiplierInside": 1.0,
+      "DecayMultiplierInside": 0.0,
       "DecayMultiplierNearTC": 1.0,
-      "ProtectionMinutesAfterUse": 45.0
+      "ProtectionMinutesAfterUse": 45.0,
+      "DecayIntervalSeconds": 60.0
     },
     "RidableHorse": {
-      "DecayMultiplierInside": 1.0,
+      "DecayMultiplierInside": 0.5,
       "DecayMultiplierNearTC": 1.0,
-      "ProtectionMinutesAfterUse": 10.0
+      "ProtectionMinutesAfterUse": 10.0,
+      "DecayIntervalSeconds": 60.0
     },
     "Rowboat": {
-      "DecayMultiplierInside": 1.0,
+      "DecayMultiplierInside": 0.0,
       "DecayMultiplierNearTC": 1.0,
-      "ProtectionMinutesAfterUse": 45.0
+      "ProtectionMinutesAfterUse": 45.0,
+      "DecayIntervalSeconds": 60.0
     },
     "ScrapTransportHelicopter": {
       "DecayMultiplierInside": 1.0,
       "DecayMultiplierNearTC": 1.0,
-      "ProtectionMinutesAfterUse": 10.0
+      "ProtectionMinutesAfterUse": 10.0,
+      "DecayIntervalSeconds": 60.0
     },
     "Snowmobile": {
-      "DecayMultiplierInside": 1.0,
+      "DecayMultiplierInside": 0.0,
       "DecayMultiplierNearTC": 1.0,
-      "ProtectionMinutesAfterUse": 45.0
+      "ProtectionMinutesAfterUse": 45.0,
+      "DecayIntervalSeconds": 60.0
     },
     "SoloSubmarine": {
-      "DecayMultiplierInside": 1.0,
+      "DecayMultiplierInside": 0.0,
       "DecayMultiplierNearTC": 1.0,
-      "ProtectionMinutesAfterUse": 45.0
+      "ProtectionMinutesAfterUse": 45.0,
+      "DecayIntervalSeconds": 60.0
     },
     "Tomaha": {
-      "DecayMultiplierInside": 1.0,
+      "DecayMultiplierInside": 0.0,
       "DecayMultiplierNearTC": 1.0,
-      "ProtectionMinutesAfterUse": 45.0
+      "ProtectionMinutesAfterUse": 45.0,
+      "DecayIntervalSeconds": 60.0
     }
   }
 }
 ```
 
-**Note: Configuration options are global settings per vehicle type and are not affected by permissions.**
+- `EnablePermission` (`true` or `false`) -- Determines whether the permission feature is enabled. If you are not using permissions to prevent vehicle decay, set this to `false` to improve performance.
 
 Each vehicle type has the following options:
-- `DecayMultiplierInside` -- Determines how much to scale decay damage for vehicles that are inside (under a roof). Defaults to `1.0` which has no effect. Set to `0.0` to completely nullify decay damage to vehicles while they are inside.
-  - Note: This will stack with the vanilla multipliers. For example, cars already take `0.1x` decay damage while inside in vanilla Rust, so setting this multiplier to `0.1` for modular cars will make them take `0.01x` decay damage while inside. This setting has no effect for Hot Air Balloons, Snowmobiles, or Tomahas since those vehicles don't take decay damage while under a roof.
+- `DecayMultiplierInside` -- Determines how much to scale decay damage for vehicles that are inside (under a roof). Set to `0.0` to completely nullify decay damage to vehicles while they are inside. Setting to `1.0` will improve performance by avoiding even checking if the vehicle is inside.
 - `DecayMultiplierNearTC` -- Determines how much to scale decay damage for vehicles that are near any tool cupboard. Defaults to `1.0` which has no effect. Set to `0.0` to completely nullify decay damage.
-- `ProtectionMinutesAfterUse` -- Determines how many minutes to prevent decay damage to vehicles after they have been used (e.g., since when their engine was last on). This mechanic already exists in vanilla Rust for most vehicles, where the protection window is usually either 10 or 45 minutes. You can change this option to protect vehicles for longer, but setting it to a lower value than default will have no effect for most vehicles.
+- `ProtectionMinutesAfterUse` -- Determines how many minutes to protect vehilces from decay after they have been used.
+- `DecayIntervalSeconds` -- Determines how often each vehicle can take decay damage. Raise this value to deal decay damage less frequently and to improve performance.
+
+## Performance tips
+
+When carefully tuned, this plugin can actually improve the performance of decay calculation compared to vanilla. Here are some tips that can help you achieve that.
+
+- Set `EnablePermission` to `false` when not using the permissions feature, to avoid checking vehicle owner permissions.
+- Raise `ProtectionMinutesAfterUse` to increase the likelihood that other expensive checks are skipped.
+- Set `DecayMultiplierInside` to `1.0` to skip checking whether the vehicle is inside.
+- Set `DecayMultiplierNearTC` to `1.0` to skip building privilege checks, which are the most expensive type of check.
+- Raising `DecayIntervalSeconds` to reduce the frequency at which the various checks are performed. The default configuration of the plugin is `60.0` to match vanilla Rust, but `300.0` is recommended as a starting point.
