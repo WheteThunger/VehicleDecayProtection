@@ -172,4 +172,4 @@ When carefully tuned, this plugin can actually improve the performance of decay 
 - Raise `ProtectionMinutesAfterUse` to increase the likelihood that other expensive checks are skipped.
 - Set `DecayMultiplierInside` to `1.0` to skip checking whether the vehicle is inside.
 - Set `DecayMultiplierNearTC` to `1.0` to skip building privilege checks, which are the most expensive type of check.
-- Raising `DecayIntervalSeconds` to reduce the frequency at which the various checks are performed. The default configuration of the plugin is `60.0` to match vanilla Rust, but `300.0` is recommended as a starting point.
+- Raising `DecayIntervalSeconds` to reduce the frequency at which the various checks are performed. The default configuration of the plugin is `60.0` to match vanilla Rust, but `600.0` is recommended as a starting point.
