@@ -1,4 +1,4 @@
-﻿//#define DEBUG
+﻿// #define DEBUG
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -121,6 +121,17 @@ namespace Oxide.Plugins
         public static void LogError(string message) => Interface.Oxide.LogError($"[Vehicle Decay Protection] {message}");
         public static void LogWarning(string message) => Interface.Oxide.LogWarning($"[Vehicle Decay Protection] {message}");
 
+        private static void DrawVehicleText(BasePlayer player, BaseEntity entity, VehicleInfo vehicleInfo, Color color, string text)
+        {
+            player.SendConsoleCommand(
+                "ddraw.text",
+                Mathf.Min(30, vehicleInfo.VehicleConfig.DecayIntervalSeconds - 5f),
+                color,
+                entity.transform.position + new Vector3(0, entity.WorldSpaceBounds().extents.y * 2, 0),
+                $"<size=20>VDP ({vehicleInfo.VehicleConfig.DecayIntervalSeconds}s)\n{text}</size>"
+            );
+        }
+
         private static void SetupDecayTick(FacepunchBehaviour component, Action action, float time)
         {
             component.InvokeRandomized(action, UnityEngine.Random.Range(time / 2f, time), time, time / 10f);
@@ -133,6 +144,14 @@ namespace Oxide.Plugins
                 return false;
 
 #if DEBUG
+            foreach (var player in BasePlayer.activePlayerList)
+            {
+                if (player.IsAdmin && (player.transform.position - entity.transform.position).sqrMagnitude < 10000)
+                {
+                    DrawVehicleText(player, entity, vehicleInfo, Color.green, $"{(int)timeSinceLastUsed}s < {60 * vehicleInfo.VehicleConfig.ProtectionMinutesAfterUse}s");
+                }
+            }
+
             LogWarning($"{entity.ShortPrefabName} :: Recently used :: {(int)timeSinceLastUsed}s < {60 * vehicleInfo.VehicleConfig.ProtectionMinutesAfterUse}s");
 #endif
             return true;
@@ -150,6 +169,14 @@ namespace Oxide.Plugins
             if (ownerHasPermission)
             {
 #if DEBUG
+                foreach (var player in BasePlayer.activePlayerList)
+                {
+                    if (player.IsAdmin && (player.transform.position - entity.transform.position).sqrMagnitude < 10000)
+                    {
+                        DrawVehicleText(player, entity, vehicleInfo, Color.green, "Owner permission");
+                    }
+                }
+
                 LogWarning($"{entity.ShortPrefabName} :: Owner has permission :: {entity.OwnerID}");
 #endif
                 return true;
@@ -163,6 +190,14 @@ namespace Oxide.Plugins
             if (lockOwnerHasPermission)
             {
 #if DEBUG
+                foreach (var player in BasePlayer.activePlayerList)
+                {
+                    if (player.IsAdmin && (player.transform.position - entity.transform.position).sqrMagnitude < 10000)
+                    {
+                        DrawVehicleText(player, entity, vehicleInfo, Color.green, "Lock owner permission");
+                    }
+                }
+
                 LogWarning($"{entity.ShortPrefabName} :: Lock owner has permission :: {lockOwnerId}");
 #endif
                 return true;
@@ -185,6 +220,17 @@ namespace Oxide.Plugins
                 return 1f;
 
 #if DEBUG
+            if (vehicleConfig.DecayMultiplierInside == 0f)
+            {
+                foreach (var player in BasePlayer.activePlayerList)
+                {
+                    if (player.IsAdmin && (player.transform.position - entity.transform.position).sqrMagnitude < 10000)
+                    {
+                        DrawVehicleText(player, entity, vehicleInfo, Color.green, $"Inside x{vehicleConfig.DecayMultiplierInside}");
+                    }
+                }
+            }
+
             LogWarning($"{entity.ShortPrefabName} :: Inside :: x{vehicleConfig.DecayMultiplierInside}");
 #endif
             return vehicleConfig.DecayMultiplierInside;
@@ -204,6 +250,17 @@ namespace Oxide.Plugins
                 return 1f;
 
 #if DEBUG
+            if (vehicleConfig.DecayMultiplierNearTC == 0f)
+            {
+                foreach (var player in BasePlayer.activePlayerList)
+                {
+                    if (player.IsAdmin && (player.transform.position - entity.transform.position).sqrMagnitude < 10000)
+                    {
+                        DrawVehicleText(player, entity, vehicleInfo, Color.green, $"Near TC x{vehicleConfig.DecayMultiplierNearTC}");
+                    }
+                }
+            }
+
             LogWarning($"{entity.ShortPrefabName} :: Near TC :: x{vehicleConfig.DecayMultiplierNearTC}");
 #endif
             return vehicleConfig.DecayMultiplierNearTC;
@@ -230,6 +287,16 @@ namespace Oxide.Plugins
 
         private static void DoDecayDamage(BaseCombatEntity entity, VehicleInfo vehicleInfo, float fraction)
         {
+#if DEBUG
+            foreach (var player in BasePlayer.activePlayerList)
+            {
+                if (player.IsAdmin && (player.transform.position - entity.transform.position).sqrMagnitude < 10000)
+                {
+                    DrawVehicleText(player, entity, vehicleInfo, Color.red, $"-{entity.MaxHealth() * fraction * vehicleInfo.GetTimeMultiplier():f2}");
+                }
+            }
+#endif
+
             entity.Hurt(entity.MaxHealth() * fraction * vehicleInfo.GetTimeMultiplier(), DamageType.Decay, entity, useProtection: false);
         }
 
