@@ -24,6 +24,8 @@ namespace Oxide.Plugins
         private const string Permission_NoDecay_AllVehicles = "vehicledecayprotection.nodecay.allvehicles";
 
         private const float VanillaDecaySeconds = 60f;
+        private const float MaxDrawSeconds = 30f;
+        private const float MaxDrawDistanceSquared = 10000f;
 
         private readonly VehicleInfoManager _vehicleInfoManager;
 
@@ -121,6 +123,12 @@ namespace Oxide.Plugins
         public static void LogError(string message) => Interface.Oxide.LogError($"[Vehicle Decay Protection] {message}");
         public static void LogWarning(string message) => Interface.Oxide.LogWarning($"[Vehicle Decay Protection] {message}");
 
+        private static bool IsPlayerDrawEligible(BasePlayer player, BaseEntity entity)
+        {
+            return player.IsAdmin
+                && (player.transform.position - entity.transform.position).sqrMagnitude < MaxDrawDistanceSquared;
+        }
+
         private static void DrawVehicleText(BasePlayer player, BaseEntity entity, VehicleInfo vehicleInfo, Color color, string text)
         {
             player.SendConsoleCommand(
@@ -146,7 +154,7 @@ namespace Oxide.Plugins
 #if DEBUG
             foreach (var player in BasePlayer.activePlayerList)
             {
-                if (player.IsAdmin && (player.transform.position - entity.transform.position).sqrMagnitude < 10000)
+                if (IsPlayerDrawEligible(player, entity))
                 {
                     DrawVehicleText(player, entity, vehicleInfo, Color.green, $"{(int)timeSinceLastUsed}s < {60 * vehicleInfo.VehicleConfig.ProtectionMinutesAfterUse}s");
                 }
@@ -171,7 +179,7 @@ namespace Oxide.Plugins
 #if DEBUG
                 foreach (var player in BasePlayer.activePlayerList)
                 {
-                    if (player.IsAdmin && (player.transform.position - entity.transform.position).sqrMagnitude < 10000)
+                    if (IsPlayerDrawEligible(player, entity))
                     {
                         DrawVehicleText(player, entity, vehicleInfo, Color.green, "Owner permission");
                     }
@@ -192,7 +200,7 @@ namespace Oxide.Plugins
 #if DEBUG
                 foreach (var player in BasePlayer.activePlayerList)
                 {
-                    if (player.IsAdmin && (player.transform.position - entity.transform.position).sqrMagnitude < 10000)
+                    if (IsPlayerDrawEligible(player, entity))
                     {
                         DrawVehicleText(player, entity, vehicleInfo, Color.green, "Lock owner permission");
                     }
@@ -224,7 +232,7 @@ namespace Oxide.Plugins
             {
                 foreach (var player in BasePlayer.activePlayerList)
                 {
-                    if (player.IsAdmin && (player.transform.position - entity.transform.position).sqrMagnitude < 10000)
+                    if (IsPlayerDrawEligible(player, entity))
                     {
                         DrawVehicleText(player, entity, vehicleInfo, Color.green, $"Inside x{vehicleConfig.DecayMultiplierInside}");
                     }
@@ -254,7 +262,7 @@ namespace Oxide.Plugins
             {
                 foreach (var player in BasePlayer.activePlayerList)
                 {
-                    if (player.IsAdmin && (player.transform.position - entity.transform.position).sqrMagnitude < 10000)
+                    if (IsPlayerDrawEligible(player, entity))
                     {
                         DrawVehicleText(player, entity, vehicleInfo, Color.green, $"Near TC x{vehicleConfig.DecayMultiplierNearTC}");
                     }
@@ -290,7 +298,7 @@ namespace Oxide.Plugins
 #if DEBUG
             foreach (var player in BasePlayer.activePlayerList)
             {
-                if (player.IsAdmin && (player.transform.position - entity.transform.position).sqrMagnitude < 10000)
+                if (IsPlayerDrawEligible(player, entity))
                 {
                     DrawVehicleText(player, entity, vehicleInfo, Color.red, $"-{entity.MaxHealth() * fraction * vehicleInfo.GetTimeMultiplier():f2}");
                 }
