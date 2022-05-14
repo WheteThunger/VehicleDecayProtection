@@ -747,9 +747,6 @@ namespace Oxide.Plugins
 
             [JsonProperty("Vehicles")]
             public VehicleConfigMap Vehicles = new VehicleConfigMap();
-
-            [JsonProperty("Debug", DefaultValueHandling = DefaultValueHandling.Ignore)]
-            public bool Debug = false;
         }
 
         private class VehicleConfigMap
