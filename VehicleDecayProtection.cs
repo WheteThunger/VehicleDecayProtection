@@ -1,4 +1,5 @@
-﻿// #define DEBUG
+﻿// #define DEBUG_LOG
+// #define DEBUG_SHOW
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -151,7 +152,7 @@ namespace Oxide.Plugins
             if (timeSinceLastUsed >= 60 * vehicleInfo.VehicleConfig.ProtectionMinutesAfterUse)
                 return false;
 
-#if DEBUG
+#if DEBUG_SHOW
             foreach (var player in BasePlayer.activePlayerList)
             {
                 if (IsPlayerDrawEligible(player, entity))
@@ -159,7 +160,8 @@ namespace Oxide.Plugins
                     DrawVehicleText(player, entity, vehicleInfo, Color.green, $"{(int)timeSinceLastUsed}s < {60 * vehicleInfo.VehicleConfig.ProtectionMinutesAfterUse}s");
                 }
             }
-
+#endif
+#if DEBUG_LOG
             LogWarning($"{entity.ShortPrefabName} :: Recently used :: {(int)timeSinceLastUsed}s < {60 * vehicleInfo.VehicleConfig.ProtectionMinutesAfterUse}s");
 #endif
             return true;
@@ -176,7 +178,7 @@ namespace Oxide.Plugins
 
             if (ownerHasPermission)
             {
-#if DEBUG
+#if DEBUG_SHOW
                 foreach (var player in BasePlayer.activePlayerList)
                 {
                     if (IsPlayerDrawEligible(player, entity))
@@ -184,7 +186,8 @@ namespace Oxide.Plugins
                         DrawVehicleText(player, entity, vehicleInfo, Color.green, "Owner permission");
                     }
                 }
-
+#endif
+#if DEBUG_LOG
                 LogWarning($"{entity.ShortPrefabName} :: Owner has permission :: {entity.OwnerID}");
 #endif
                 return true;
@@ -197,7 +200,7 @@ namespace Oxide.Plugins
 
             if (lockOwnerHasPermission)
             {
-#if DEBUG
+#if DEBUG_SHOW
                 foreach (var player in BasePlayer.activePlayerList)
                 {
                     if (IsPlayerDrawEligible(player, entity))
@@ -205,7 +208,8 @@ namespace Oxide.Plugins
                         DrawVehicleText(player, entity, vehicleInfo, Color.green, "Lock owner permission");
                     }
                 }
-
+#endif
+#if DEBUG_LOG
                 LogWarning($"{entity.ShortPrefabName} :: Lock owner has permission :: {lockOwnerId}");
 #endif
                 return true;
@@ -227,7 +231,7 @@ namespace Oxide.Plugins
             if (vehicleConfig.DecayMultiplierInside == 1f || isOutside)
                 return 1f;
 
-#if DEBUG
+#if DEBUG_SHOW
             if (vehicleConfig.DecayMultiplierInside == 0f)
             {
                 foreach (var player in BasePlayer.activePlayerList)
@@ -238,7 +242,8 @@ namespace Oxide.Plugins
                     }
                 }
             }
-
+#endif
+#if DEBUG_LOG
             LogWarning($"{entity.ShortPrefabName} :: Inside :: x{vehicleConfig.DecayMultiplierInside}");
 #endif
             return vehicleConfig.DecayMultiplierInside;
@@ -257,7 +262,7 @@ namespace Oxide.Plugins
             if (!hasBuildingPrivilege)
                 return 1f;
 
-#if DEBUG
+#if DEBUG_SHOW
             if (vehicleConfig.DecayMultiplierNearTC == 0f)
             {
                 foreach (var player in BasePlayer.activePlayerList)
@@ -268,7 +273,8 @@ namespace Oxide.Plugins
                     }
                 }
             }
-
+#endif
+#if DEBUG_LOG
             LogWarning($"{entity.ShortPrefabName} :: Near TC :: x{vehicleConfig.DecayMultiplierNearTC}");
 #endif
             return vehicleConfig.DecayMultiplierNearTC;
@@ -295,7 +301,7 @@ namespace Oxide.Plugins
 
         private static void DoDecayDamage(BaseCombatEntity entity, VehicleInfo vehicleInfo, float fraction)
         {
-#if DEBUG
+#if DEBUG_SHOW
             foreach (var player in BasePlayer.activePlayerList)
             {
                 if (IsPlayerDrawEligible(player, entity))
@@ -306,6 +312,21 @@ namespace Oxide.Plugins
 #endif
 
             entity.Hurt(entity.MaxHealth() * fraction * vehicleInfo.GetTimeMultiplier(), DamageType.Decay, entity, useProtection: false);
+        }
+
+        private static void DoCarDecayDamage(ModularCar car, VehicleInfo vehicleInfo, float amount)
+        {
+#if DEBUG_SHOW
+            foreach (var player in BasePlayer.activePlayerList)
+            {
+                if (IsPlayerDrawEligible(player, car))
+                {
+                    DrawVehicleText(player, car, vehicleInfo, Color.red, $"-{amount:f2}");
+                }
+            }
+#endif
+
+            car.DoDecayDamage(amount);
         }
 
         private static void MinicopterDecay(VehicleDecayProtection pluginInstance, MiniCopter miniCopter, VehicleInfo vehicleInfo)
@@ -565,7 +586,7 @@ namespace Oxide.Plugins
                             if (car.IsDead())
                             {
                                 var numModules = Mathf.Max(1, car.AttachedModuleEntities.Count);
-                                car.DoDecayDamage(120f / numModules * vehicleInfo.GetTimeMultiplier());
+                                DoCarDecayDamage(car, vehicleInfo, 120f / numModules * vehicleInfo.GetTimeMultiplier());
                                 return;
                             }
 
@@ -577,7 +598,7 @@ namespace Oxide.Plugins
                                 ? car.AttachedModuleEntities.Max(module => module.MaxHealth())
                                 : car.MaxHealth();
 
-                            car.DoDecayDamage(health * vehicleInfo.GetTimeMultiplier() * multiplier / ModularCar.outsidedecayminutes);
+                            DoCarDecayDamage(car, vehicleInfo, health * vehicleInfo.GetTimeMultiplier() * multiplier / ModularCar.outsidedecayminutes);
                         }
                     },
                     new VehicleInfo
