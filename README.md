@@ -173,7 +173,7 @@ Default configuration (equivalent to vanilla):
 Each vehicle type has the following options:
 - `DecayMultiplierInside` -- Determines how much to scale decay damage for vehicles that are inside (under a roof). Set to `0.0` to completely nullify decay damage to vehicles while they are inside. Setting to `1.0` will improve performance by avoiding even checking if the vehicle is inside.
 - `DecayMultiplierNearTC` -- Determines how much to scale decay damage for vehicles that are near any tool cupboard. Defaults to `1.0` which has no effect. Set to `0.0` to completely nullify decay damage.
-- `ProtectionMinutesAfterUse` -- Determines how many minutes to protect vehilces from decay after they have been used.
+- `ProtectionMinutesAfterUse` -- Determines how many minutes to protect vehicles from decay after they have been used.
 - `DecayIntervalSeconds` -- Determines how often each vehicle can take decay damage. Raise this value to deal decay damage less frequently and to improve performance.
 
 ## Performance tips
