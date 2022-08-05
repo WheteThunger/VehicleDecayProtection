@@ -9,12 +9,13 @@ using Oxide.Core.Libraries;
 using Rust;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using UnityEngine;
 
 namespace Oxide.Plugins
 {
-    [Info("Vehicle Decay Protection", "WhiteThunder", "2.0.1")]
+    [Info("Vehicle Decay Protection", "WhiteThunder", "2.1.0")]
     [Description("Protects vehicles from decay based on ownership and other factors.")]
     internal class VehicleDecayProtection : CovalencePlugin
     {
@@ -149,21 +150,24 @@ namespace Oxide.Plugins
         private static bool WasRecentlyUsed(BaseEntity entity, VehicleInfo vehicleInfo)
         {
             var timeSinceLastUsed = vehicleInfo.GetTimeSinceLastUsed(entity);
-            if (timeSinceLastUsed >= 60 * vehicleInfo.VehicleConfig.ProtectionMinutesAfterUse)
+            var vehicleConfig = vehicleInfo.VehicleConfig;
+            if (vehicleConfig.ProtectionMinutesAfterUse != -1 && timeSinceLastUsed >= 60 * vehicleConfig.ProtectionMinutesAfterUse)
                 return false;
 
-#if DEBUG_SHOW
-            foreach (var player in BasePlayer.activePlayerList)
-            {
-                if (IsPlayerDrawEligible(player, entity))
+            #if DEBUG_SHOW
+                foreach (var player in BasePlayer.activePlayerList)
                 {
-                    DrawVehicleText(player, entity, vehicleInfo, Color.green, $"{(int)timeSinceLastUsed}s < {60 * vehicleInfo.VehicleConfig.ProtectionMinutesAfterUse}s");
+                    if (IsPlayerDrawEligible(player, entity))
+                    {
+                        DrawVehicleText(player, entity, vehicleInfo, Color.green, $"{(int)timeSinceLastUsed}s < {60 * vehicleConfig.ProtectionMinutesAfterUse}s");
+                    }
                 }
-            }
-#endif
-#if DEBUG_LOG
-            LogWarning($"{entity.ShortPrefabName} :: Recently used :: {(int)timeSinceLastUsed}s < {60 * vehicleInfo.VehicleConfig.ProtectionMinutesAfterUse}s");
-#endif
+            #endif
+
+            #if DEBUG_LOG
+                LogWarning($"{entity.ShortPrefabName} :: Recently used :: {(int)timeSinceLastUsed}s < {60 * vehicleConfig.ProtectionMinutesAfterUse}s");
+            #endif
+
             return true;
         }
 
@@ -178,18 +182,20 @@ namespace Oxide.Plugins
 
             if (ownerHasPermission)
             {
-#if DEBUG_SHOW
-                foreach (var player in BasePlayer.activePlayerList)
-                {
-                    if (IsPlayerDrawEligible(player, entity))
+                #if DEBUG_SHOW
+                    foreach (var player in BasePlayer.activePlayerList)
                     {
-                        DrawVehicleText(player, entity, vehicleInfo, Color.green, "Owner permission");
+                        if (IsPlayerDrawEligible(player, entity))
+                        {
+                            DrawVehicleText(player, entity, vehicleInfo, Color.green, "Owner permission");
+                        }
                     }
-                }
-#endif
-#if DEBUG_LOG
-                LogWarning($"{entity.ShortPrefabName} :: Owner has permission :: {entity.OwnerID}");
-#endif
+                #endif
+
+                #if DEBUG_LOG
+                    LogWarning($"{entity.ShortPrefabName} :: Owner has permission :: {entity.OwnerID}");
+                #endif
+
                 return true;
             }
 
@@ -200,18 +206,20 @@ namespace Oxide.Plugins
 
             if (lockOwnerHasPermission)
             {
-#if DEBUG_SHOW
-                foreach (var player in BasePlayer.activePlayerList)
-                {
-                    if (IsPlayerDrawEligible(player, entity))
+                #if DEBUG_SHOW
+                    foreach (var player in BasePlayer.activePlayerList)
                     {
-                        DrawVehicleText(player, entity, vehicleInfo, Color.green, "Lock owner permission");
+                        if (IsPlayerDrawEligible(player, entity))
+                        {
+                            DrawVehicleText(player, entity, vehicleInfo, Color.green, "Lock owner permission");
+                        }
                     }
-                }
-#endif
-#if DEBUG_LOG
-                LogWarning($"{entity.ShortPrefabName} :: Lock owner has permission :: {lockOwnerId}");
-#endif
+                #endif
+
+                #if DEBUG_LOG
+                    LogWarning($"{entity.ShortPrefabName} :: Lock owner has permission :: {lockOwnerId}");
+                #endif
+
                 return true;
             }
 
@@ -231,21 +239,23 @@ namespace Oxide.Plugins
             if (vehicleConfig.DecayMultiplierInside == 1f || isOutside)
                 return 1f;
 
-#if DEBUG_SHOW
-            if (vehicleConfig.DecayMultiplierInside == 0f)
-            {
-                foreach (var player in BasePlayer.activePlayerList)
+            #if DEBUG_SHOW
+                if (vehicleConfig.DecayMultiplierInside == 0f)
                 {
-                    if (IsPlayerDrawEligible(player, entity))
+                    foreach (var player in BasePlayer.activePlayerList)
                     {
-                        DrawVehicleText(player, entity, vehicleInfo, Color.green, $"Inside x{vehicleConfig.DecayMultiplierInside}");
+                        if (IsPlayerDrawEligible(player, entity))
+                        {
+                            DrawVehicleText(player, entity, vehicleInfo, Color.green, $"Inside x{vehicleConfig.DecayMultiplierInside}");
+                        }
                     }
                 }
-            }
-#endif
-#if DEBUG_LOG
-            LogWarning($"{entity.ShortPrefabName} :: Inside :: x{vehicleConfig.DecayMultiplierInside}");
-#endif
+            #endif
+
+            #if DEBUG_LOG
+                LogWarning($"{entity.ShortPrefabName} :: Inside :: x{vehicleConfig.DecayMultiplierInside}");
+            #endif
+
             return vehicleConfig.DecayMultiplierInside;
         }
 
@@ -262,21 +272,23 @@ namespace Oxide.Plugins
             if (!hasBuildingPrivilege)
                 return 1f;
 
-#if DEBUG_SHOW
-            if (vehicleConfig.DecayMultiplierNearTC == 0f)
-            {
-                foreach (var player in BasePlayer.activePlayerList)
+            #if DEBUG_SHOW
+                if (vehicleConfig.DecayMultiplierNearTC == 0f)
                 {
-                    if (IsPlayerDrawEligible(player, entity))
+                    foreach (var player in BasePlayer.activePlayerList)
                     {
-                        DrawVehicleText(player, entity, vehicleInfo, Color.green, $"Near TC x{vehicleConfig.DecayMultiplierNearTC}");
+                        if (IsPlayerDrawEligible(player, entity))
+                        {
+                            DrawVehicleText(player, entity, vehicleInfo, Color.green, $"Near TC x{vehicleConfig.DecayMultiplierNearTC}");
+                        }
                     }
                 }
-            }
-#endif
-#if DEBUG_LOG
-            LogWarning($"{entity.ShortPrefabName} :: Near TC :: x{vehicleConfig.DecayMultiplierNearTC}");
-#endif
+            #endif
+
+            #if DEBUG_LOG
+                LogWarning($"{entity.ShortPrefabName} :: Near TC :: x{vehicleConfig.DecayMultiplierNearTC}");
+            #endif
+
             return vehicleConfig.DecayMultiplierNearTC;
         }
 
@@ -299,32 +311,43 @@ namespace Oxide.Plugins
             return GetLocationMultiplier(pluginInstance, entity, vehicleInfo, out isOutside);
         }
 
-        private static void DoDecayDamage(BaseCombatEntity entity, VehicleInfo vehicleInfo, float fraction)
+        private static void DoDecayDamage(BaseCombatEntity entity, VehicleInfo vehicleInfo, float fraction, DamageType damageType = DamageType.Decay, bool useProtection = false)
         {
-#if DEBUG_SHOW
-            foreach (var player in BasePlayer.activePlayerList)
-            {
-                if (IsPlayerDrawEligible(player, entity))
-                {
-                    DrawVehicleText(player, entity, vehicleInfo, Color.red, $"-{entity.MaxHealth() * fraction * vehicleInfo.GetTimeMultiplier():f2}");
-                }
-            }
-#endif
+            var amount = entity.MaxHealth() * fraction * vehicleInfo.GetTimeMultiplier();
 
-            entity.Hurt(entity.MaxHealth() * fraction * vehicleInfo.GetTimeMultiplier(), DamageType.Decay, entity, useProtection: false);
+            if (useProtection && entity.baseProtection != null)
+            {
+                // Manually scale damage so that we can show the correct amount.
+                amount *= (1 - entity.baseProtection.amounts[(int)damageType]);
+            }
+
+            #if DEBUG_SHOW
+                foreach (var player in BasePlayer.activePlayerList)
+                {
+                    if (IsPlayerDrawEligible(player, entity))
+                    {
+                        DrawVehicleText(player, entity, vehicleInfo, Color.red, $"-{amount:f2}");
+                    }
+                }
+            #endif
+
+            if (amount == 0)
+                return;
+
+            entity.Hurt(amount, damageType, entity, useProtection: false);
         }
 
         private static void DoCarDecayDamage(ModularCar car, VehicleInfo vehicleInfo, float amount)
         {
-#if DEBUG_SHOW
-            foreach (var player in BasePlayer.activePlayerList)
-            {
-                if (IsPlayerDrawEligible(player, car))
+            #if DEBUG_SHOW
+                foreach (var player in BasePlayer.activePlayerList)
                 {
-                    DrawVehicleText(player, car, vehicleInfo, Color.red, $"-{amount:f2}");
+                    if (IsPlayerDrawEligible(player, car))
+                    {
+                        DrawVehicleText(player, car, vehicleInfo, Color.red, $"-{amount:f2}");
+                    }
                 }
-            }
-#endif
+            #endif
 
             car.DoDecayDamage(amount);
         }
@@ -380,6 +403,20 @@ namespace Oxide.Plugins
             }
 
             DoDecayDamage(waterVehicle, vehicleInfo, multiplier / decayMinutes);
+        }
+
+        private static void SledDecay(VehicleDecayProtection pluginInstance, Sled sled, VehicleInfo vehicleInfo)
+        {
+            if (sled.DecayAmount == 0f
+                || sled.AnyMounted()
+                || VehicleHasPermission(pluginInstance, sled, vehicleInfo))
+                return;
+
+            var multiplier = GetLocationMultiplier(pluginInstance, sled, vehicleInfo);
+            if (multiplier == 0f)
+                return;
+
+            DoDecayDamage(sled, vehicleInfo, multiplier * sled.DecayAmount / sled.MaxHealth(), DamageType.Generic, useProtection: true);
         }
 
         #endregion
@@ -697,6 +734,26 @@ namespace Oxide.Plugins
                     },
                     new VehicleInfo
                     {
+                        VehicleType = "sled",
+                        PrefabPaths = new string[] { "assets/prefabs/misc/xmas/sled/sled.deployed.prefab" },
+                        VehicleConfig = pluginConfig.Vehicles.Sled,
+                        IsCorrectType = (entity) => entity is Sled,
+                        GetTimeSinceLastUsed = (entity) => float.MaxValue,
+                        GetVanillaDecayMethod = (entity) => (entity as Sled).DecayOverTime,
+                        DecayTick = (entity, vehicleInfo) => SledDecay(_pluginInstance, entity as Sled, vehicleInfo)
+                    },
+                    new VehicleInfo
+                    {
+                        VehicleType = "sled.xmas",
+                        PrefabPaths = new string[] { "assets/prefabs/misc/xmas/sled/skins/sled.deployed.xmas.prefab" },
+                        VehicleConfig = pluginConfig.Vehicles.SledXmas,
+                        IsCorrectType = (entity) => entity is Sled,
+                        GetTimeSinceLastUsed = (entity) => float.MaxValue,
+                        GetVanillaDecayMethod = (entity) => (entity as Sled).DecayOverTime,
+                        DecayTick = (entity, vehicleInfo) => SledDecay(_pluginInstance, entity as Sled, vehicleInfo)
+                    },
+                    new VehicleInfo
+                    {
                         VehicleType = "snowmobile",
                         PrefabPaths = new string[] { "assets/content/vehicles/snowmobiles/snowmobile.prefab" },
                         VehicleConfig = pluginConfig.Vehicles.Snowmobile,
@@ -757,13 +814,20 @@ namespace Oxide.Plugins
 
         #region Configuration
 
-        private class Configuration : SerializableConfiguration
+        private class VehicleConfig
         {
-            [JsonProperty("EnablePermission")]
-            public bool EnablePermission = true;
+            [JsonProperty("DecayMultiplierInside")]
+            public float DecayMultiplierInside = 1;
 
-            [JsonProperty("Vehicles")]
-            public VehicleConfigMap Vehicles = new VehicleConfigMap();
+            [JsonProperty("DecayMultiplierNearTC")]
+            public float DecayMultiplierNearTC = 1;
+
+            [JsonProperty("ProtectionMinutesAfterUse", DefaultValueHandling = DefaultValueHandling.Ignore)]
+            [DefaultValue(-1f)]
+            public float ProtectionMinutesAfterUse = 10;
+
+            [JsonProperty("DecayIntervalSeconds")]
+            public float DecayIntervalSeconds = 60;
         }
 
         private class VehicleConfigMap
@@ -831,6 +895,20 @@ namespace Oxide.Plugins
                 ProtectionMinutesAfterUse = 10,
             };
 
+            [JsonProperty("Sled")]
+            public VehicleConfig Sled = new VehicleConfig
+            {
+                DecayMultiplierInside = 1f,
+                ProtectionMinutesAfterUse = -1,
+            };
+
+            [JsonProperty("Sled.Xmas")]
+            public VehicleConfig SledXmas = new VehicleConfig
+            {
+                DecayMultiplierInside = 1f,
+                ProtectionMinutesAfterUse = -1,
+            };
+
             [JsonProperty("Snowmobile")]
             public VehicleConfig Snowmobile = new VehicleConfig
             {
@@ -853,19 +931,13 @@ namespace Oxide.Plugins
             };
         }
 
-        private class VehicleConfig
+        private class Configuration : SerializableConfiguration
         {
-            [JsonProperty("DecayMultiplierInside")]
-            public float DecayMultiplierInside = 1;
+            [JsonProperty("EnablePermission")]
+            public bool EnablePermission = true;
 
-            [JsonProperty("DecayMultiplierNearTC")]
-            public float DecayMultiplierNearTC = 1;
-
-            [JsonProperty("ProtectionMinutesAfterUse")]
-            public float ProtectionMinutesAfterUse = 10;
-
-            [JsonProperty("DecayIntervalSeconds")]
-            public float DecayIntervalSeconds = 60;
+            [JsonProperty("Vehicles")]
+            public VehicleConfigMap Vehicles = new VehicleConfigMap();
         }
 
         private Configuration GetDefaultConfig() => new Configuration();

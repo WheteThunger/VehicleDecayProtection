@@ -57,6 +57,8 @@ Granting the following permissions to a player will cause their **owned** vehicl
 - `vehicledecayprotection.nodecay.ridablehorse`
 - `vehicledecayprotection.nodecay.rowboat`
 - `vehicledecayprotection.nodecay.scraptransporthelicopter`
+- `vehicledecayprotection.nodecay.sled`
+- `vehicledecayprotection.nodecay.sled.xmas`
 - `vehicledecayprotection.nodecay.snowmobile`
 - `vehicledecayprotection.nodecay.solosubmarine`
 - `vehicledecayprotection.nodecay.tomaha`
@@ -132,6 +134,16 @@ Default configuration (equivalent to vanilla):
       "DecayMultiplierInside": 1.0,
       "DecayMultiplierNearTC": 1.0,
       "ProtectionMinutesAfterUse": 10.0,
+      "DecayIntervalSeconds": 60.0
+    },
+    "Sled": {
+      "DecayMultiplierInside": 1.0,
+      "DecayMultiplierNearTC": 1.0,
+      "DecayIntervalSeconds": 60.0
+    },
+    "Sled.Xmas": {
+      "DecayMultiplierInside": 1.0,
+      "DecayMultiplierNearTC": 1.0,
       "DecayIntervalSeconds": 60.0
     },
     "Snowmobile": {
