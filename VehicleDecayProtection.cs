@@ -15,7 +15,7 @@ using UnityEngine;
 
 namespace Oxide.Plugins
 {
-    [Info("Vehicle Decay Protection", "WhiteThunder", "2.1.0")]
+    [Info("Vehicle Decay Protection", "WhiteThunder", "2.2.0")]
     [Description("Protects vehicles from decay based on ownership and other factors.")]
     internal class VehicleDecayProtection : CovalencePlugin
     {
@@ -124,6 +124,22 @@ namespace Oxide.Plugins
         public static void LogInfo(string message) => Interface.Oxide.LogInfo($"[Vehicle Decay Protection] {message}");
         public static void LogError(string message) => Interface.Oxide.LogError($"[Vehicle Decay Protection] {message}");
         public static void LogWarning(string message) => Interface.Oxide.LogWarning($"[Vehicle Decay Protection] {message}");
+
+        private static string[] FindPrefabsOfType<T>() where T : BaseEntity
+        {
+            var prefabList = new List<string>();
+
+            foreach (var assetPath in GameManifest.Current.entities)
+            {
+                var entity = GameManager.server.FindPrefab(assetPath)?.GetComponent<T>();
+                if (entity == null)
+                    continue;
+
+                prefabList.Add(entity.PrefabName);
+            }
+
+            return prefabList.ToArray();
+        }
 
         private static bool IsPlayerDrawEligible(BasePlayer player, BaseEntity entity)
         {
@@ -606,15 +622,8 @@ namespace Oxide.Plugins
                     new VehicleInfo
                     {
                         VehicleType = "modularcar",
-                        PrefabPaths = new string[]
-                        {
-                            "assets/content/vehicles/modularcar/car_chassis_2module.entity.prefab",
-                            "assets/content/vehicles/modularcar/car_chassis_3module.entity.prefab",
-                            "assets/content/vehicles/modularcar/car_chassis_4module.entity.prefab",
-                            "assets/content/vehicles/modularcar/2module_car_spawned.entity.prefab",
-                            "assets/content/vehicles/modularcar/3module_car_spawned.entity.prefab",
-                            "assets/content/vehicles/modularcar/4module_car_spawned.entity.prefab",
-                        },
+                        // There are at least 37 valid Modular Car prefabs.
+                        PrefabPaths = FindPrefabsOfType<ModularCar>(),
                         VehicleConfig = pluginConfig.Vehicles.ModularCar,
                         IsCorrectType = (entity) => entity is ModularCar,
                         GetTimeSinceLastUsed = (entity) => UnityEngine.Time.time - (entity as ModularCar).lastEngineOnTime,
