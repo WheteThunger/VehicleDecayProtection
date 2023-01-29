@@ -33,8 +33,8 @@ Other:
 
 If you want to simply disable decay for vehicles, then you can just set these to really high (i.e., `1000000`) and you don't need a plugin.
 
-Some vehicles also have an internal multiplier that reduces decay damage while under a roof.
-- Horses: `0.5x` decay damage while under a roof
+Some vehicles also have an internal multiplier that affects decay damage while under a roof.
+- Horses: `2.0x` decay damage while under a roof
 - Modular Cars: `0.1x` decay damage while under a roof
 - All Boats and Submarines: no decay damage while under a roof
   - In vanilla, they also have to be in shallow water, but this plugin removes that restriction
@@ -119,7 +119,7 @@ Default configuration (equivalent to vanilla):
       "DecayIntervalSeconds": 60.0
     },
     "RidableHorse": {
-      "DecayMultiplierInside": 0.5,
+      "DecayMultiplierInside": 2.0,
       "DecayMultiplierNearTC": 1.0,
       "ProtectionMinutesAfterUse": 10.0,
       "DecayIntervalSeconds": 60.0

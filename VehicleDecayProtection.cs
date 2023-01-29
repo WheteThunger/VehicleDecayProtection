@@ -15,7 +15,7 @@ using UnityEngine;
 
 namespace Oxide.Plugins
 {
-    [Info("Vehicle Decay Protection", "WhiteThunder", "2.2.0")]
+    [Info("Vehicle Decay Protection", "WhiteThunder", "2.2.1")]
     [Description("Protects vehicles from decay based on ownership and other factors.")]
     internal class VehicleDecayProtection : CovalencePlugin
     {
@@ -886,7 +886,7 @@ namespace Oxide.Plugins
             [JsonProperty("RidableHorse")]
             public VehicleConfig RidableHorse = new VehicleConfig
             {
-                DecayMultiplierInside = 0.5f,
+                DecayMultiplierInside = 2,
                 ProtectionMinutesAfterUse = 10,
             };
 
