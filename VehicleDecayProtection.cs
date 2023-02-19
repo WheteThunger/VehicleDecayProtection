@@ -151,7 +151,7 @@ namespace Oxide.Plugins
         {
             player.SendConsoleCommand(
                 "ddraw.text",
-                Mathf.Min(30, vehicleInfo.VehicleConfig.DecayIntervalSeconds - 5f),
+                Mathf.Min(MaxDrawSeconds, vehicleInfo.VehicleConfig.DecayIntervalSeconds - 5f),
                 color,
                 entity.transform.position + new Vector3(0, entity.WorldSpaceBounds().extents.y * 2, 0),
                 $"<size=20>VDP ({vehicleInfo.VehicleConfig.DecayIntervalSeconds}s)\n{text}</size>"
@@ -171,17 +171,17 @@ namespace Oxide.Plugins
                 return false;
 
             #if DEBUG_SHOW
-                foreach (var player in BasePlayer.activePlayerList)
+            foreach (var player in BasePlayer.activePlayerList)
+            {
+                if (IsPlayerDrawEligible(player, entity))
                 {
-                    if (IsPlayerDrawEligible(player, entity))
-                    {
-                        DrawVehicleText(player, entity, vehicleInfo, Color.green, $"{(int)timeSinceLastUsed}s < {60 * vehicleConfig.ProtectionMinutesAfterUse}s");
-                    }
+                    DrawVehicleText(player, entity, vehicleInfo, Color.green, $"{(int)timeSinceLastUsed}s < {60 * vehicleConfig.ProtectionMinutesAfterUse}s");
                 }
+            }
             #endif
 
             #if DEBUG_LOG
-                LogWarning($"{entity.ShortPrefabName} :: Recently used :: {(int)timeSinceLastUsed}s < {60 * vehicleConfig.ProtectionMinutesAfterUse}s");
+            LogWarning($"{entity.ShortPrefabName} :: Recently used :: {(int)timeSinceLastUsed}s < {60 * vehicleConfig.ProtectionMinutesAfterUse}s");
             #endif
 
             return true;
@@ -199,17 +199,17 @@ namespace Oxide.Plugins
             if (ownerHasPermission)
             {
                 #if DEBUG_SHOW
-                    foreach (var player in BasePlayer.activePlayerList)
+                foreach (var player in BasePlayer.activePlayerList)
+                {
+                    if (IsPlayerDrawEligible(player, entity))
                     {
-                        if (IsPlayerDrawEligible(player, entity))
-                        {
-                            DrawVehicleText(player, entity, vehicleInfo, Color.green, "Owner permission");
-                        }
+                        DrawVehicleText(player, entity, vehicleInfo, Color.green, "Owner permission");
                     }
+                }
                 #endif
 
                 #if DEBUG_LOG
-                    LogWarning($"{entity.ShortPrefabName} :: Owner has permission :: {entity.OwnerID}");
+                LogWarning($"{entity.ShortPrefabName} :: Owner has permission :: {entity.OwnerID}");
                 #endif
 
                 return true;
@@ -223,17 +223,17 @@ namespace Oxide.Plugins
             if (lockOwnerHasPermission)
             {
                 #if DEBUG_SHOW
-                    foreach (var player in BasePlayer.activePlayerList)
+                foreach (var player in BasePlayer.activePlayerList)
+                {
+                    if (IsPlayerDrawEligible(player, entity))
                     {
-                        if (IsPlayerDrawEligible(player, entity))
-                        {
-                            DrawVehicleText(player, entity, vehicleInfo, Color.green, "Lock owner permission");
-                        }
+                        DrawVehicleText(player, entity, vehicleInfo, Color.green, "Lock owner permission");
                     }
+                }
                 #endif
 
                 #if DEBUG_LOG
-                    LogWarning($"{entity.ShortPrefabName} :: Lock owner has permission :: {lockOwnerId}");
+                LogWarning($"{entity.ShortPrefabName} :: Lock owner has permission :: {lockOwnerId}");
                 #endif
 
                 return true;
@@ -256,20 +256,20 @@ namespace Oxide.Plugins
                 return 1f;
 
             #if DEBUG_SHOW
-                if (vehicleConfig.DecayMultiplierInside == 0f)
+            if (vehicleConfig.DecayMultiplierInside == 0f)
+            {
+                foreach (var player in BasePlayer.activePlayerList)
                 {
-                    foreach (var player in BasePlayer.activePlayerList)
+                    if (IsPlayerDrawEligible(player, entity))
                     {
-                        if (IsPlayerDrawEligible(player, entity))
-                        {
-                            DrawVehicleText(player, entity, vehicleInfo, Color.green, $"Inside x{vehicleConfig.DecayMultiplierInside}");
-                        }
+                        DrawVehicleText(player, entity, vehicleInfo, Color.green, $"Inside x{vehicleConfig.DecayMultiplierInside}");
                     }
                 }
+            }
             #endif
 
             #if DEBUG_LOG
-                LogWarning($"{entity.ShortPrefabName} :: Inside :: x{vehicleConfig.DecayMultiplierInside}");
+            LogWarning($"{entity.ShortPrefabName} :: Inside :: x{vehicleConfig.DecayMultiplierInside}");
             #endif
 
             return vehicleConfig.DecayMultiplierInside;
@@ -289,20 +289,20 @@ namespace Oxide.Plugins
                 return 1f;
 
             #if DEBUG_SHOW
-                if (vehicleConfig.DecayMultiplierNearTC == 0f)
+            if (vehicleConfig.DecayMultiplierNearTC == 0f)
+            {
+                foreach (var player in BasePlayer.activePlayerList)
                 {
-                    foreach (var player in BasePlayer.activePlayerList)
+                    if (IsPlayerDrawEligible(player, entity))
                     {
-                        if (IsPlayerDrawEligible(player, entity))
-                        {
-                            DrawVehicleText(player, entity, vehicleInfo, Color.green, $"Near TC x{vehicleConfig.DecayMultiplierNearTC}");
-                        }
+                        DrawVehicleText(player, entity, vehicleInfo, Color.green, $"Near TC x{vehicleConfig.DecayMultiplierNearTC}");
                     }
                 }
+            }
             #endif
 
             #if DEBUG_LOG
-                LogWarning($"{entity.ShortPrefabName} :: Near TC :: x{vehicleConfig.DecayMultiplierNearTC}");
+            LogWarning($"{entity.ShortPrefabName} :: Near TC :: x{vehicleConfig.DecayMultiplierNearTC}");
             #endif
 
             return vehicleConfig.DecayMultiplierNearTC;
@@ -338,13 +338,13 @@ namespace Oxide.Plugins
             }
 
             #if DEBUG_SHOW
-                foreach (var player in BasePlayer.activePlayerList)
+            foreach (var player in BasePlayer.activePlayerList)
+            {
+                if (IsPlayerDrawEligible(player, entity))
                 {
-                    if (IsPlayerDrawEligible(player, entity))
-                    {
-                        DrawVehicleText(player, entity, vehicleInfo, Color.red, $"-{amount:f2}");
-                    }
+                    DrawVehicleText(player, entity, vehicleInfo, Color.red, $"-{amount:f2}");
                 }
+            }
             #endif
 
             if (amount == 0)
@@ -356,13 +356,13 @@ namespace Oxide.Plugins
         private static void DoCarDecayDamage(ModularCar car, VehicleInfo vehicleInfo, float amount)
         {
             #if DEBUG_SHOW
-                foreach (var player in BasePlayer.activePlayerList)
+            foreach (var player in BasePlayer.activePlayerList)
+            {
+                if (IsPlayerDrawEligible(player, car))
                 {
-                    if (IsPlayerDrawEligible(player, car))
-                    {
-                        DrawVehicleText(player, car, vehicleInfo, Color.red, $"-{amount:f2}");
-                    }
+                    DrawVehicleText(player, car, vehicleInfo, Color.red, $"-{amount:f2}");
                 }
+            }
             #endif
 
             car.DoDecayDamage(amount);
@@ -550,12 +550,12 @@ namespace Oxide.Plugins
 
             public void OnServerInitialized(Configuration pluginConfig)
             {
-                var allVehicles = new VehicleInfo[]
+                var allVehicles = new[]
                 {
                     new VehicleInfo
                     {
                         VehicleType = "duosubmarine",
-                        PrefabPaths = new string[] { "assets/content/vehicles/submarine/submarineduo.entity.prefab" },
+                        PrefabPaths = new[] { "assets/content/vehicles/submarine/submarineduo.entity.prefab" },
                         VehicleConfig = pluginConfig.Vehicles.DuoSubmarine,
                         IsCorrectType = (entity) => entity is SubmarineDuo,
                         GetTimeSinceLastUsed = (entity) => (entity as SubmarineDuo).timeSinceLastUsed,
@@ -571,7 +571,7 @@ namespace Oxide.Plugins
                     new VehicleInfo
                     {
                         VehicleType = "hotairballoon",
-                        PrefabPaths = new string[] { "assets/prefabs/deployable/hot air balloon/hotairballoon.prefab" },
+                        PrefabPaths = new[] { "assets/prefabs/deployable/hot air balloon/hotairballoon.prefab" },
                         VehicleConfig = pluginConfig.Vehicles.HotAirBalloon,
                         IsCorrectType = (entity) => entity is HotAirBalloon,
                         GetTimeSinceLastUsed = (entity) => UnityEngine.Time.time - (entity as HotAirBalloon).lastBlastTime,
@@ -596,7 +596,7 @@ namespace Oxide.Plugins
                     new VehicleInfo
                     {
                         VehicleType = "kayak",
-                        PrefabPaths = new string[] { "assets/content/vehicles/boats/kayak/kayak.prefab" },
+                        PrefabPaths = new[] { "assets/content/vehicles/boats/kayak/kayak.prefab" },
                         VehicleConfig = pluginConfig.Vehicles.Kayak,
                         IsCorrectType = (entity) => entity is Kayak,
                         GetTimeSinceLastUsed = (entity) => (entity as Kayak).timeSinceLastUsed,
@@ -612,7 +612,7 @@ namespace Oxide.Plugins
                     new VehicleInfo
                     {
                         VehicleType = "minicopter",
-                        PrefabPaths = new string[] { "assets/content/vehicles/minicopter/minicopter.entity.prefab" },
+                        PrefabPaths = new[] { "assets/content/vehicles/minicopter/minicopter.entity.prefab" },
                         VehicleConfig = pluginConfig.Vehicles.Minicopter,
                         IsCorrectType = (entity) => entity is MiniCopter,
                         GetTimeSinceLastUsed = (entity) => UnityEngine.Time.time - (entity as MiniCopter).lastEngineOnTime,
@@ -660,7 +660,7 @@ namespace Oxide.Plugins
                     new VehicleInfo
                     {
                         VehicleType = "rhib",
-                        PrefabPaths = new string[] { "assets/content/vehicles/boats/rhib/rhib.prefab" },
+                        PrefabPaths = new[] { "assets/content/vehicles/boats/rhib/rhib.prefab" },
                         VehicleConfig = pluginConfig.Vehicles.RHIB,
                         IsCorrectType = (entity) => entity is RHIB,
                         GetTimeSinceLastUsed = (entity) => (entity as RHIB).timeSinceLastUsedFuel,
@@ -683,7 +683,7 @@ namespace Oxide.Plugins
                     new VehicleInfo
                     {
                         VehicleType = "ridablehorse",
-                        PrefabPaths = new string[] { "assets/rust.ai/nextai/testridablehorse.prefab" },
+                        PrefabPaths = new[] { "assets/rust.ai/nextai/testridablehorse.prefab" },
                         VehicleConfig = pluginConfig.Vehicles.RidableHorse,
                         IsCorrectType = (entity) => entity is RidableHorse,
                         GetTimeSinceLastUsed = (entity) => UnityEngine.Time.time - (entity as RidableHorse).lastInputTime,
@@ -711,7 +711,7 @@ namespace Oxide.Plugins
                     new VehicleInfo
                     {
                         VehicleType = "rowboat",
-                        PrefabPaths = new string[] { "assets/content/vehicles/boats/rowboat/rowboat.prefab" },
+                        PrefabPaths = new[] { "assets/content/vehicles/boats/rowboat/rowboat.prefab" },
                         VehicleConfig = pluginConfig.Vehicles.Rowboat,
                         IsCorrectType = (entity) => entity is MotorRowboat,
                         GetTimeSinceLastUsed = (entity) => (entity as MotorRowboat).timeSinceLastUsedFuel,
@@ -734,7 +734,7 @@ namespace Oxide.Plugins
                     new VehicleInfo
                     {
                         VehicleType = "scraptransporthelicopter",
-                        PrefabPaths = new string[] { "assets/content/vehicles/scrap heli carrier/scraptransporthelicopter.prefab" },
+                        PrefabPaths = new[] { "assets/content/vehicles/scrap heli carrier/scraptransporthelicopter.prefab" },
                         VehicleConfig = pluginConfig.Vehicles.ScrapTransportHelicopter,
                         IsCorrectType = (entity) => entity is ScrapTransportHelicopter,
                         GetTimeSinceLastUsed = (entity) => UnityEngine.Time.time - (entity as ScrapTransportHelicopter).lastEngineOnTime,
@@ -744,7 +744,7 @@ namespace Oxide.Plugins
                     new VehicleInfo
                     {
                         VehicleType = "sled",
-                        PrefabPaths = new string[] { "assets/prefabs/misc/xmas/sled/sled.deployed.prefab" },
+                        PrefabPaths = new[] { "assets/prefabs/misc/xmas/sled/sled.deployed.prefab" },
                         VehicleConfig = pluginConfig.Vehicles.Sled,
                         IsCorrectType = (entity) => entity is Sled,
                         GetTimeSinceLastUsed = (entity) => float.MaxValue,
@@ -754,7 +754,7 @@ namespace Oxide.Plugins
                     new VehicleInfo
                     {
                         VehicleType = "sled.xmas",
-                        PrefabPaths = new string[] { "assets/prefabs/misc/xmas/sled/skins/sled.deployed.xmas.prefab" },
+                        PrefabPaths = new[] { "assets/prefabs/misc/xmas/sled/skins/sled.deployed.xmas.prefab" },
                         VehicleConfig = pluginConfig.Vehicles.SledXmas,
                         IsCorrectType = (entity) => entity is Sled,
                         GetTimeSinceLastUsed = (entity) => float.MaxValue,
@@ -764,7 +764,7 @@ namespace Oxide.Plugins
                     new VehicleInfo
                     {
                         VehicleType = "snowmobile",
-                        PrefabPaths = new string[] { "assets/content/vehicles/snowmobiles/snowmobile.prefab" },
+                        PrefabPaths = new[] { "assets/content/vehicles/snowmobiles/snowmobile.prefab" },
                         VehicleConfig = pluginConfig.Vehicles.Snowmobile,
                         IsCorrectType = (entity) => entity is Snowmobile,
                         GetTimeSinceLastUsed = (entity) => (entity as Snowmobile).timeSinceLastUsed,
@@ -774,7 +774,7 @@ namespace Oxide.Plugins
                     new VehicleInfo
                     {
                         VehicleType = "solosubmarine",
-                        PrefabPaths = new string[] { "assets/content/vehicles/submarine/submarinesolo.entity.prefab" },
+                        PrefabPaths = new[] { "assets/content/vehicles/submarine/submarinesolo.entity.prefab" },
                         VehicleConfig = pluginConfig.Vehicles.SoloSubmarine,
                         IsCorrectType = (entity) => entity is BaseSubmarine,
                         GetTimeSinceLastUsed = (entity) => (entity as BaseSubmarine).timeSinceLastUsed,
@@ -790,7 +790,7 @@ namespace Oxide.Plugins
                     new VehicleInfo
                     {
                         VehicleType = "tomaha",
-                        PrefabPaths = new string[] { "assets/content/vehicles/snowmobiles/tomahasnowmobile.prefab" },
+                        PrefabPaths = new[] { "assets/content/vehicles/snowmobiles/tomahasnowmobile.prefab" },
                         VehicleConfig = pluginConfig.Vehicles.Tomaha,
                         IsCorrectType = (entity) => entity is Snowmobile,
                         GetTimeSinceLastUsed = (entity) => (entity as Snowmobile).timeSinceLastUsed,
@@ -940,7 +940,7 @@ namespace Oxide.Plugins
             };
         }
 
-        private class Configuration : SerializableConfiguration
+        private class Configuration : BaseConfiguration
         {
             [JsonProperty("EnablePermission")]
             public bool EnablePermission = true;
@@ -953,9 +953,9 @@ namespace Oxide.Plugins
 
         #endregion
 
-        #region Configuration Boilerplate
+        #region Configuration Helpers
 
-        private class SerializableConfiguration
+        private class BaseConfiguration
         {
             public string ToJson() => JsonConvert.SerializeObject(this);
 
@@ -984,7 +984,7 @@ namespace Oxide.Plugins
             }
         }
 
-        private bool MaybeUpdateConfig(SerializableConfiguration config)
+        private bool MaybeUpdateConfig(BaseConfiguration config)
         {
             var currentWithDefaults = config.ToDictionary();
             var currentRaw = Config.ToDictionary(x => x.Key, x => x.Value);
