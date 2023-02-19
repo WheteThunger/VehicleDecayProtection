@@ -81,7 +81,34 @@ namespace Oxide.Plugins
 
         #endregion
 
+        #region Exposed Hooks
+
+        private static class ExposedHooks
+        {
+            public static object OnVehicleDecayReplace(BaseEntity entity)
+            {
+                return Interface.CallHook("OnVehicleDecayReplace", entity);
+            }
+        }
+
+        #endregion
+
         #region Helper Methods
+
+        private void ScheduleReplaceDecay(BaseEntity entity, VehicleInfo vehicleInfo)
+        {
+            NextTick(() =>
+            {
+                if (entity == null || entity.IsDestroyed)
+                    return;
+
+                var hookResult = ExposedHooks.OnVehicleDecayReplace(entity);
+                if (hookResult is bool && !(bool)hookResult)
+                    return;
+
+                VehicleDecayReplacer.AddToEntity(entity, vehicleInfo);
+            });
+        }
 
         private void HandleEntitySpawned(BaseEntity entity)
         {
@@ -89,7 +116,7 @@ namespace Oxide.Plugins
             if (vehicleInfo == null || !vehicleInfo.VehicleConfig.Enabled)
                 return;
 
-            VehicleDecayReplacer.AddToEntity(entity, vehicleInfo);
+            ScheduleReplaceDecay(entity, vehicleInfo);
         }
 
         private bool UserHasPermission(UserData userData, string perm)

@@ -202,3 +202,13 @@ When carefully tuned, this plugin can actually improve the performance of decay 
 - Set `Decay multiplier while inside` to `1.0` to skip checking whether the vehicle is inside.
 - Set `Decay multiplier near tool cupboard` to `1.0` to skip building privilege checks, which are the most expensive type of check.
 - Raise `Decay interval (seconds)` to reduce the frequency at which the various checks are performed. The default configuration of the plugin is `60.0` to match vanilla Rust, but `600.0` is recommended as a starting point.
+
+## Developer Hooks
+
+```cs
+object OnVehicleDecayReplace(BaseEntity entity)
+```
+
+- Called when this plugin is about to replace decay logic for a vehicle.
+- Returning `false` will prevent this plugin from replacing that vehicle's decay logic.
+- Returning `null` will result in the default behavior.
