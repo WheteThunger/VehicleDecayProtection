@@ -84,82 +84,96 @@ Default configuration (equivalent to vanilla):
   "Enable permission": true,
   "Vehicles": {
     "Duo Submarine": {
+      "Allow the plugin to influence decay": true,
       "Decay multiplier while inside": 0.0,
       "Decay multiplier near tool cupboard": 1.0,
       "Protect from decay after recent use (minutes)": 45.0,
       "Decay interval (seconds)": 60.0
     },
     "Hot Air Balloon": {
+      "Allow the plugin to influence decay": true,
       "Decay multiplier while inside": 0.0,
       "Decay multiplier near tool cupboard": 1.0,
       "Protect from decay after recent use (minutes)": 10.0,
       "Decay interval (seconds)": 60.0
     },
     "Kayak": {
+      "Allow the plugin to influence decay": true,
       "Decay multiplier while inside": 0.0,
       "Decay multiplier near tool cupboard": 1.0,
       "Protect from decay after recent use (minutes)": 45.0,
       "Decay interval (seconds)": 60.0
     },
     "Minicopter": {
+      "Allow the plugin to influence decay": true,
       "Decay multiplier while inside": 1.0,
       "Decay multiplier near tool cupboard": 1.0,
       "Protect from decay after recent use (minutes)": 10.0,
       "Decay interval (seconds)": 60.0
     },
     "Modular Car": {
+      "Allow the plugin to influence decay": true,
       "Decay multiplier while inside": 0.1,
       "Decay multiplier near tool cupboard": 1.0,
       "Protect from decay after recent use (minutes)": 10.0,
       "Decay interval (seconds)": 60.0
     },
     "RHIB": {
+      "Allow the plugin to influence decay": true,
       "Decay multiplier while inside": 0.0,
       "Decay multiplier near tool cupboard": 1.0,
       "Protect from decay after recent use (minutes)": 45.0,
       "Decay interval (seconds)": 60.0
     },
     "Ridable Horse": {
+      "Allow the plugin to influence decay": true,
       "Decay multiplier while inside": 2.0,
       "Decay multiplier near tool cupboard": 1.0,
       "Protect from decay after recent use (minutes)": 10.0,
       "Decay interval (seconds)": 60.0
     },
     "Rowboat": {
+      "Allow the plugin to influence decay": true,
       "Decay multiplier while inside": 0.0,
       "Decay multiplier near tool cupboard": 1.0,
       "Protect from decay after recent use (minutes)": 45.0,
       "Decay interval (seconds)": 60.0
     },
     "Scrap Transport Helicopter": {
+      "Allow the plugin to influence decay": true,
       "Decay multiplier while inside": 1.0,
       "Decay multiplier near tool cupboard": 1.0,
       "Protect from decay after recent use (minutes)": 10.0,
       "Decay interval (seconds)": 60.0
     },
     "Sled": {
+      "Allow the plugin to influence decay": true,
       "Decay multiplier while inside": 1.0,
       "Decay multiplier near tool cupboard": 1.0,
       "Decay interval (seconds)": 60.0
     },
     "Sled Xmas": {
+      "Allow the plugin to influence decay": true,
       "Decay multiplier while inside": 1.0,
       "Decay multiplier near tool cupboard": 1.0,
       "Decay interval (seconds)": 60.0
     },
     "Snowmobile": {
+      "Allow the plugin to influence decay": true,
       "Decay multiplier while inside": 0.0,
       "Decay multiplier near tool cupboard": 1.0,
       "Protect from decay after recent use (minutes)": 45.0,
       "Decay interval (seconds)": 60.0
     },
     "Solo Submarine": {
+      "Allow the plugin to influence decay": true,
       "Decay multiplier while inside": 0.0,
       "Decay multiplier near tool cupboard": 1.0,
       "Protect from decay after recent use (minutes)": 45.0,
       "Decay interval (seconds)": 60.0
     },
     "Tomaha": {
+      "Allow the plugin to influence decay": true,
       "Decay multiplier while inside": 0.0,
       "Decay multiplier near tool cupboard": 1.0,
       "Protect from decay after recent use (minutes)": 45.0,
@@ -172,6 +186,8 @@ Default configuration (equivalent to vanilla):
 - `Enable permission` (`true` or `false`) -- Determines whether the permission feature is enabled. If you are not using permissions to prevent vehicle decay, set this to `false` to improve performance.
 
 Each vehicle type has the following options:
+
+- `Allow the plugin to influence decay` (`true` or `false`) -- Determines whether the plugin will influence decay for this vehicle type. If you don't want to alter decay for a given vehicle type, you may set this to `false` to ensure that vanilla decay is used.
 - `Decay multiplier while inside` -- Determines how much to scale decay damage for vehicles that are inside (under a roof). Set to `0.0` to completely nullify decay damage to vehicles while they are inside. Setting to `1.0` will improve performance by avoiding even checking if the vehicle is inside.
 - `Decay multiplier near tool cupboard` -- Determines how much to scale decay damage for vehicles that are near **any** tool cupboard (regardless of whether the vehicle owner is authorized). Defaults to `1.0` which has no effect. Set to `0.0` to completely nullify decay damage near tool cupboards.
 - `Protect from decay after recent use (minutes)` -- Determines how many minutes to protect vehicles from decay after they have been used.

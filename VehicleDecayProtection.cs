@@ -86,7 +86,7 @@ namespace Oxide.Plugins
         private void HandleEntitySpawned(BaseEntity entity)
         {
             var vehicleInfo = _vehicleInfoManager.GetVehicleInfo(entity);
-            if (vehicleInfo == null)
+            if (vehicleInfo == null || !vehicleInfo.VehicleConfig.Enabled)
                 return;
 
             VehicleDecayReplacer.AddToEntity(entity, vehicleInfo);
@@ -825,6 +825,9 @@ namespace Oxide.Plugins
 
         private class VehicleConfig
         {
+            [JsonProperty("Allow the plugin to influence decay")]
+            public bool Enabled = true;
+
             [JsonProperty("Decay multiplier while inside")]
             public float DecayMultiplierInside = 1;
 
