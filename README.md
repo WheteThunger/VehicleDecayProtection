@@ -43,13 +43,13 @@ Some vehicles also have an internal multiplier that affects decay damage while u
 
 ## Permissions
 
-*Note: This plugin has four different features for protecting vehicles against decay. Only one of those features uses permissions: no decay based on vehicle ownership. If you simply want to make vehicles not decay if they have been recently used, or if you want to scale decay for vehicles under a roof or near a tool cupboard, those features DO NOT use permissions, so skip ahead to the configuration section of the plugin.*
+*Note: This plugin has four different features for protecting vehicles against decay. Only one of those features uses permissions: "no decay based on vehicle ownership". If you simply want to make vehicles not decay if they have been recently used, or if you want to scale decay for vehicles under a roof or near a tool cupboard, those features DO NOT use permissions, so skip ahead to the configuration section of the plugin.*
 
 Granting the following permissions to a player will cause their **owned** vehicles to not decay under any circumstances. You can grant permissions by vehicle type, or for all vehicles with a single permission.
 
 - `vehicledecayprotection.nodecay.allvehicles` (all in one)
-- `vehicledecayprotection.nodecay.hotairballoon`
 - `vehicledecayprotection.nodecay.duosubmarine`
+- `vehicledecayprotection.nodecay.hotairballoon`
 - `vehicledecayprotection.nodecay.kayak`
 - `vehicledecayprotection.nodecay.minicopter`
 - `vehicledecayprotection.nodecay.modularcar`
@@ -57,8 +57,8 @@ Granting the following permissions to a player will cause their **owned** vehicl
 - `vehicledecayprotection.nodecay.ridablehorse`
 - `vehicledecayprotection.nodecay.rowboat`
 - `vehicledecayprotection.nodecay.scraptransporthelicopter`
-- `vehicledecayprotection.nodecay.sled`
 - `vehicledecayprotection.nodecay.sled.xmas`
+- `vehicledecayprotection.nodecay.sled`
 - `vehicledecayprotection.nodecay.snowmobile`
 - `vehicledecayprotection.nodecay.solosubmarine`
 - `vehicledecayprotection.nodecay.tomaha`
@@ -71,6 +71,7 @@ Vehicle ownership is determined by the `OwnerID` property of the vehicle, which 
 
 - [Vehicle Vendor Options](https://umod.org/plugins/vehicle-vendor-options) - Automatically assigns ownership of vehicles purchased at vanilla NPC vendors if the player has permission
 - [Claim Vehicle Ownership](https://umod.org/plugins/claim-vehicle-ownership) - Allows players with permission to claim ownership of unowned vehicles using a command on cooldown
+- [Vehicle Deployed Locks](https://umod.org/plugins/vehicle-deployed-locks) - Optionally assigns ownership to vehicles when a lock is deployed onto them
 
 Alternatively, if the vehicle has a **code lock** or **key lock** attached to it via [Vehicle Deployed Locks](https://umod.org/plugins/vehicle-deployed-locks), this plugin will also check the `nodecay` permissions of the lock owner, if the lock is locked.
 
@@ -80,108 +81,108 @@ Default configuration (equivalent to vanilla):
 
 ```json
 {
-  "EnablePermission": true,
+  "Enable permission": true,
   "Vehicles": {
-    "DuoSubmarine": {
-      "DecayMultiplierInside": 0.0,
-      "DecayMultiplierNearTC": 1.0,
-      "ProtectionMinutesAfterUse": 45.0,
-      "DecayIntervalSeconds": 60.0
+    "Duo Submarine": {
+      "Decay multiplier while inside": 0.0,
+      "Decay multiplier near tool cupboard": 1.0,
+      "Protect from decay after recent use (minutes)": 45.0,
+      "Decay interval (seconds)": 60.0
     },
-    "HotAirBalloon": {
-      "DecayMultiplierInside": 0.0,
-      "DecayMultiplierNearTC": 1.0,
-      "ProtectionMinutesAfterUse": 10.0,
-      "DecayIntervalSeconds": 60.0
+    "Hot Air Balloon": {
+      "Decay multiplier while inside": 0.0,
+      "Decay multiplier near tool cupboard": 1.0,
+      "Protect from decay after recent use (minutes)": 10.0,
+      "Decay interval (seconds)": 60.0
     },
     "Kayak": {
-      "DecayMultiplierInside": 0.0,
-      "DecayMultiplierNearTC": 1.0,
-      "ProtectionMinutesAfterUse": 45.0,
-      "DecayIntervalSeconds": 60.0
+      "Decay multiplier while inside": 0.0,
+      "Decay multiplier near tool cupboard": 1.0,
+      "Protect from decay after recent use (minutes)": 45.0,
+      "Decay interval (seconds)": 60.0
     },
     "Minicopter": {
-      "DecayMultiplierInside": 1.0,
-      "DecayMultiplierNearTC": 1.0,
-      "ProtectionMinutesAfterUse": 10.0,
-      "DecayIntervalSeconds": 60.0
+      "Decay multiplier while inside": 1.0,
+      "Decay multiplier near tool cupboard": 1.0,
+      "Protect from decay after recent use (minutes)": 10.0,
+      "Decay interval (seconds)": 60.0
     },
-    "ModularCar": {
-      "DecayMultiplierInside": 0.1,
-      "DecayMultiplierNearTC": 1.0,
-      "ProtectionMinutesAfterUse": 10.0,
-      "DecayIntervalSeconds": 60.0
+    "Modular Car": {
+      "Decay multiplier while inside": 0.1,
+      "Decay multiplier near tool cupboard": 1.0,
+      "Protect from decay after recent use (minutes)": 10.0,
+      "Decay interval (seconds)": 60.0
     },
     "RHIB": {
-      "DecayMultiplierInside": 0.0,
-      "DecayMultiplierNearTC": 1.0,
-      "ProtectionMinutesAfterUse": 45.0,
-      "DecayIntervalSeconds": 60.0
+      "Decay multiplier while inside": 0.0,
+      "Decay multiplier near tool cupboard": 1.0,
+      "Protect from decay after recent use (minutes)": 45.0,
+      "Decay interval (seconds)": 60.0
     },
-    "RidableHorse": {
-      "DecayMultiplierInside": 2.0,
-      "DecayMultiplierNearTC": 1.0,
-      "ProtectionMinutesAfterUse": 10.0,
-      "DecayIntervalSeconds": 60.0
+    "Ridable Horse": {
+      "Decay multiplier while inside": 2.0,
+      "Decay multiplier near tool cupboard": 1.0,
+      "Protect from decay after recent use (minutes)": 10.0,
+      "Decay interval (seconds)": 60.0
     },
     "Rowboat": {
-      "DecayMultiplierInside": 0.0,
-      "DecayMultiplierNearTC": 1.0,
-      "ProtectionMinutesAfterUse": 45.0,
-      "DecayIntervalSeconds": 60.0
+      "Decay multiplier while inside": 0.0,
+      "Decay multiplier near tool cupboard": 1.0,
+      "Protect from decay after recent use (minutes)": 45.0,
+      "Decay interval (seconds)": 60.0
     },
-    "ScrapTransportHelicopter": {
-      "DecayMultiplierInside": 1.0,
-      "DecayMultiplierNearTC": 1.0,
-      "ProtectionMinutesAfterUse": 10.0,
-      "DecayIntervalSeconds": 60.0
+    "Scrap Transport Helicopter": {
+      "Decay multiplier while inside": 1.0,
+      "Decay multiplier near tool cupboard": 1.0,
+      "Protect from decay after recent use (minutes)": 10.0,
+      "Decay interval (seconds)": 60.0
     },
     "Sled": {
-      "DecayMultiplierInside": 1.0,
-      "DecayMultiplierNearTC": 1.0,
-      "DecayIntervalSeconds": 60.0
+      "Decay multiplier while inside": 1.0,
+      "Decay multiplier near tool cupboard": 1.0,
+      "Decay interval (seconds)": 60.0
     },
-    "Sled.Xmas": {
-      "DecayMultiplierInside": 1.0,
-      "DecayMultiplierNearTC": 1.0,
-      "DecayIntervalSeconds": 60.0
+    "Sled Xmas": {
+      "Decay multiplier while inside": 1.0,
+      "Decay multiplier near tool cupboard": 1.0,
+      "Decay interval (seconds)": 60.0
     },
     "Snowmobile": {
-      "DecayMultiplierInside": 0.0,
-      "DecayMultiplierNearTC": 1.0,
-      "ProtectionMinutesAfterUse": 45.0,
-      "DecayIntervalSeconds": 60.0
+      "Decay multiplier while inside": 0.0,
+      "Decay multiplier near tool cupboard": 1.0,
+      "Protect from decay after recent use (minutes)": 45.0,
+      "Decay interval (seconds)": 60.0
     },
-    "SoloSubmarine": {
-      "DecayMultiplierInside": 0.0,
-      "DecayMultiplierNearTC": 1.0,
-      "ProtectionMinutesAfterUse": 45.0,
-      "DecayIntervalSeconds": 60.0
+    "Solo Submarine": {
+      "Decay multiplier while inside": 0.0,
+      "Decay multiplier near tool cupboard": 1.0,
+      "Protect from decay after recent use (minutes)": 45.0,
+      "Decay interval (seconds)": 60.0
     },
     "Tomaha": {
-      "DecayMultiplierInside": 0.0,
-      "DecayMultiplierNearTC": 1.0,
-      "ProtectionMinutesAfterUse": 45.0,
-      "DecayIntervalSeconds": 60.0
+      "Decay multiplier while inside": 0.0,
+      "Decay multiplier near tool cupboard": 1.0,
+      "Protect from decay after recent use (minutes)": 45.0,
+      "Decay interval (seconds)": 60.0
     }
   }
 }
 ```
 
-- `EnablePermission` (`true` or `false`) -- Determines whether the permission feature is enabled. If you are not using permissions to prevent vehicle decay, set this to `false` to improve performance.
+- `Enable permission` (`true` or `false`) -- Determines whether the permission feature is enabled. If you are not using permissions to prevent vehicle decay, set this to `false` to improve performance.
 
 Each vehicle type has the following options:
-- `DecayMultiplierInside` -- Determines how much to scale decay damage for vehicles that are inside (under a roof). Set to `0.0` to completely nullify decay damage to vehicles while they are inside. Setting to `1.0` will improve performance by avoiding even checking if the vehicle is inside.
-- `DecayMultiplierNearTC` -- Determines how much to scale decay damage for vehicles that are near any tool cupboard. Defaults to `1.0` which has no effect. Set to `0.0` to completely nullify decay damage.
-- `ProtectionMinutesAfterUse` -- Determines how many minutes to protect vehicles from decay after they have been used.
-- `DecayIntervalSeconds` -- Determines how often each vehicle can take decay damage. Raise this value to deal decay damage less frequently and to improve performance.
+- `Decay multiplier while inside` -- Determines how much to scale decay damage for vehicles that are inside (under a roof). Set to `0.0` to completely nullify decay damage to vehicles while they are inside. Setting to `1.0` will improve performance by avoiding even checking if the vehicle is inside.
+- `Decay multiplier near tool cupboard` -- Determines how much to scale decay damage for vehicles that are near **any** tool cupboard (regardless of whether the vehicle owner is authorized). Defaults to `1.0` which has no effect. Set to `0.0` to completely nullify decay damage near tool cupboards.
+- `Protect from decay after recent use (minutes)` -- Determines how many minutes to protect vehicles from decay after they have been used.
+- `Decay interval (seconds)` -- Determines how often each vehicle can take decay damage. Raise this value to deal decay damage less frequently and to improve performance. The plugin will automatically compensate for slower schedules by dealing higher amounts of decay damage, so you don't have to worry about this affecting damage over time.
 
 ## Performance tips
 
 When carefully tuned, this plugin can actually improve the performance of decay calculation compared to vanilla. Here are some tips that can help you achieve that.
 
-- Set `EnablePermission` to `false` when not using the permissions feature, to avoid checking vehicle owner permissions.
-- Raise `ProtectionMinutesAfterUse` to increase the likelihood that other expensive checks are skipped.
-- Set `DecayMultiplierInside` to `1.0` to skip checking whether the vehicle is inside.
-- Set `DecayMultiplierNearTC` to `1.0` to skip building privilege checks, which are the most expensive type of check.
-- Raise `DecayIntervalSeconds` to reduce the frequency at which the various checks are performed. The default configuration of the plugin is `60.0` to match vanilla Rust, but `600.0` is recommended as a starting point.
+- Set `Enable permission` to `false` when not using the permissions feature, to avoid checking vehicle owner permissions.
+- Raise `Protect from decay after recent use (minutes)` to increase the likelihood that other expensive checks are skipped.
+- Set `Decay multiplier while inside` to `1.0` to skip checking whether the vehicle is inside.
+- Set `Decay multiplier near tool cupboard` to `1.0` to skip building privilege checks, which are the most expensive type of check.
+- Raise `Decay interval (seconds)` to reduce the frequency at which the various checks are performed. The default configuration of the plugin is `60.0` to match vanilla Rust, but `600.0` is recommended as a starting point.

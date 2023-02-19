@@ -825,35 +825,53 @@ namespace Oxide.Plugins
 
         private class VehicleConfig
         {
-            [JsonProperty("DecayMultiplierInside")]
+            [JsonProperty("Decay multiplier while inside")]
             public float DecayMultiplierInside = 1;
 
-            [JsonProperty("DecayMultiplierNearTC")]
+            [JsonProperty("DecayMultiplierInside")]
+            private float DeprecatedDecayMultiplierInside { set { DecayMultiplierInside = value; } }
+
+            [JsonProperty("Decay multiplier near tool cupboard")]
             public float DecayMultiplierNearTC = 1;
 
-            [JsonProperty("ProtectionMinutesAfterUse", DefaultValueHandling = DefaultValueHandling.Ignore)]
+            [JsonProperty("DecayMultiplierNearTC")]
+            private float DeprecatedDecayMultiplierNearTC { set { DecayMultiplierNearTC = value; } }
+
+            [JsonProperty("Protect from decay after recent use (minutes)", DefaultValueHandling = DefaultValueHandling.Ignore)]
             [DefaultValue(-1f)]
             public float ProtectionMinutesAfterUse = 10;
 
-            [JsonProperty("DecayIntervalSeconds")]
+            [JsonProperty("ProtectionMinutesAfterUse")]
+            private float DeprecatedProtectionMinutesAfterUse { set { ProtectionMinutesAfterUse = value; } }
+
+            [JsonProperty("Decay interval (seconds)")]
             public float DecayIntervalSeconds = 60;
+
+            [JsonProperty("DecayIntervalSeconds")]
+            private float DeprecatedDecayIntervalSeconds { set { DecayIntervalSeconds = value; } }
         }
 
         private class VehicleConfigMap
         {
-            [JsonProperty("DuoSubmarine")]
+            [JsonProperty("Duo Submarine")]
             public VehicleConfig DuoSubmarine = new VehicleConfig
             {
                 DecayMultiplierInside = 0f,
                 ProtectionMinutesAfterUse = 45,
             };
 
-            [JsonProperty("HotAirBalloon")]
+            [JsonProperty("DuoSubmarine")]
+            private VehicleConfig DeprecatedDuoSubmarine { set { DuoSubmarine = value; } }
+
+            [JsonProperty("Hot Air Balloon")]
             public VehicleConfig HotAirBalloon = new VehicleConfig
             {
                 DecayMultiplierInside = 0f,
                 ProtectionMinutesAfterUse = 10,
             };
+
+            [JsonProperty("HotAirBalloon")]
+            private VehicleConfig DeprecatedHotAirBalloon { set { HotAirBalloon = value; } }
 
             [JsonProperty("Kayak")]
             public VehicleConfig Kayak = new VehicleConfig
@@ -869,12 +887,15 @@ namespace Oxide.Plugins
                 ProtectionMinutesAfterUse = 10,
             };
 
-            [JsonProperty("ModularCar")]
+            [JsonProperty("Modular Car")]
             public VehicleConfig ModularCar = new VehicleConfig
             {
                 DecayMultiplierInside = 0.1f,
                 ProtectionMinutesAfterUse = 10,
             };
+
+            [JsonProperty("ModularCar")]
+            private VehicleConfig DeprecatedModularCar { set { ModularCar = value; } }
 
             [JsonProperty("RHIB")]
             public VehicleConfig RHIB = new VehicleConfig
@@ -883,12 +904,15 @@ namespace Oxide.Plugins
                 ProtectionMinutesAfterUse = 45,
             };
 
-            [JsonProperty("RidableHorse")]
+            [JsonProperty("Ridable Horse")]
             public VehicleConfig RidableHorse = new VehicleConfig
             {
                 DecayMultiplierInside = 2,
                 ProtectionMinutesAfterUse = 10,
             };
+
+            [JsonProperty("RidableHorse")]
+            private VehicleConfig DeprecatedRidableHorse { set { RidableHorse = value; } }
 
             [JsonProperty("Rowboat")]
             public VehicleConfig Rowboat = new VehicleConfig
@@ -897,12 +921,15 @@ namespace Oxide.Plugins
                 ProtectionMinutesAfterUse = 45,
             };
 
-            [JsonProperty("ScrapTransportHelicopter")]
+            [JsonProperty("Scrap Transport Helicopter")]
             public VehicleConfig ScrapTransportHelicopter = new VehicleConfig
             {
                 DecayMultiplierInside = 1f,
                 ProtectionMinutesAfterUse = 10,
             };
+
+            [JsonProperty("ScrapTransportHelicopter")]
+            private VehicleConfig DeprecatedScrapTransportHelicopter { set { ScrapTransportHelicopter = value; } }
 
             [JsonProperty("Sled")]
             public VehicleConfig Sled = new VehicleConfig
@@ -911,12 +938,15 @@ namespace Oxide.Plugins
                 ProtectionMinutesAfterUse = -1,
             };
 
-            [JsonProperty("Sled.Xmas")]
+            [JsonProperty("Sled Xmas")]
             public VehicleConfig SledXmas = new VehicleConfig
             {
                 DecayMultiplierInside = 1f,
                 ProtectionMinutesAfterUse = -1,
             };
+
+            [JsonProperty("Sled.Xmas")]
+            private VehicleConfig DeprecatedSledXmas { set { SledXmas = value; } }
 
             [JsonProperty("Snowmobile")]
             public VehicleConfig Snowmobile = new VehicleConfig
@@ -925,12 +955,15 @@ namespace Oxide.Plugins
                 ProtectionMinutesAfterUse = 45,
             };
 
-            [JsonProperty("SoloSubmarine")]
+            [JsonProperty("Solo Submarine")]
             public VehicleConfig SoloSubmarine = new VehicleConfig
             {
                 DecayMultiplierInside = 0f,
                 ProtectionMinutesAfterUse = 45,
             };
+
+            [JsonProperty("SoloSubmarine")]
+            private VehicleConfig DeprecatedSoloSubmarine { set { SoloSubmarine = value; } }
 
             [JsonProperty("Tomaha")]
             public VehicleConfig Tomaha = new VehicleConfig
@@ -942,8 +975,11 @@ namespace Oxide.Plugins
 
         private class Configuration : BaseConfiguration
         {
-            [JsonProperty("EnablePermission")]
+            [JsonProperty("Enable permission")]
             public bool EnablePermission = true;
+
+            [JsonProperty("EnablePermission")]
+            private bool DeprecatedEnablePermission { set { EnablePermission = value; } }
 
             [JsonProperty("Vehicles")]
             public VehicleConfigMap Vehicles = new VehicleConfigMap();
