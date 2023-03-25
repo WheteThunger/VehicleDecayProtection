@@ -70,7 +70,7 @@ Granting the following permissions to a player will cause their **owned** vehicl
 Vehicle ownership is determined by the `OwnerID` property of the vehicle, which is usually a player's Steam ID, or `0` for no owner. Most plugins that spawn vehicles for a player will assign that player as the owner. For vehicles spawned by the vanilla game, it's recommended to use one of the following plugins to grant vehicle ownership.
 
 - [Vehicle Vendor Options](https://umod.org/plugins/vehicle-vendor-options) - Automatically assigns ownership of vehicles purchased at vanilla NPC vendors if the player has permission
-- [Claim Vehicle Ownership](https://umod.org/plugins/claim-vehicle-ownership) - Allows players with permission to claim ownership of unowned vehicles using a command on cooldown
+- [Claim Vehicle](https://umod.org/plugins/claim-vehicle) - Allows players with permission to claim ownership of unowned vehicles using a command on cooldown
 - [Vehicle Deployed Locks](https://umod.org/plugins/vehicle-deployed-locks) - Optionally assigns ownership to vehicles when a lock is deployed onto them
 
 Alternatively, if the vehicle has a **code lock** or **key lock** attached to it via [Vehicle Deployed Locks](https://umod.org/plugins/vehicle-deployed-locks), this plugin will also check the `nodecay` permissions of the lock owner, if the lock is locked.
