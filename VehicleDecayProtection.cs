@@ -15,7 +15,7 @@ using UnityEngine;
 
 namespace Oxide.Plugins
 {
-    [Info("Vehicle Decay Protection", "WhiteThunder", "2.3.0")]
+    [Info("Vehicle Decay Protection", "WhiteThunder", "2.3.1")]
     [Description("Protects vehicles from decay based on ownership and other factors.")]
     internal class VehicleDecayProtection : CovalencePlugin
     {
@@ -438,7 +438,7 @@ namespace Oxide.Plugins
                 return;
 
             var decayMinutes = outsideDecayMinutes;
-            var overallWaterDepth = WaterLevel.GetOverallWaterDepth(waterVehicle.transform.position);
+            var overallWaterDepth = WaterLevel.GetOverallWaterDepth(waterVehicle.transform.position, waves: true, volumes: false);
             if (overallWaterDepth > 12f)
             {
                 var divisor = Mathf.Lerp(0.1f, 1f, Mathf.InverseLerp(12f, 16f, overallWaterDepth));
@@ -695,7 +695,7 @@ namespace Oxide.Plugins
                         DecayTick = (entity, vehicleInfo) =>
                         {
                             var rhib = entity as MotorRowboat;
-                            if (rhib.dying)
+                            if (rhib.IsDying)
                                 return;
 
                             WaterVehicleDecay(
@@ -746,7 +746,7 @@ namespace Oxide.Plugins
                         DecayTick = (entity, vehicleInfo) =>
                         {
                             var rowBoat = entity as MotorRowboat;
-                            if (rowBoat.dying)
+                            if (rowBoat.IsDying)
                                 return;
 
                             WaterVehicleDecay(
