@@ -5,7 +5,7 @@
 - Scale decay damage when a vehicle is under a roof (does not use permission)
 - Scale decay damage when a vehicle is near a tool cupboard (does not use permission)
 - Nullify decay damage for a configurable amount of time after a vehicle has been used (does not use permission)
-- Nullify decay damage if a vehicle is owned by (or had a lock deployed onto it by) a player with permission
+- Nullify decay damage if a vehicle is owned (or had a lock deployed onto it) by a player with permission
 
 ## No-Plugin Alternative
 
@@ -18,6 +18,11 @@ Minicopters and Scrap Transport Helicopters:
 Row Boats, RHIBs, and Kayaks:
 - `motorrowboat.outsidedecayminutes`
 - `motorrowboat.deepwaterdecayminutes`
+- `motorrowboat.decaystartdelayminutes` (equivalent to `ProtectionMinutesAfterUse` config option)
+
+Tug Boats:
+- `tugboat.tugdecayminutes`
+- `tugboat.tugdecaystartdelayminutes` (equivalent to `ProtectionMinutesAfterUse` config option)
 
 Duo and Solo Submarines:
 - `basesubmarine.outsidedecayminutes`
@@ -33,10 +38,14 @@ Other:
 
 If you want to simply disable decay for vehicles, then you can just set these to really high (i.e., `1000000`) and you don't need a plugin.
 
+Additional convars:
+- `motorrowboat.decaystartdelayminutes` -- Determines how long until decay begins for the vehicle after it was last used, applying to Row Boats, RHIBs, Kayaks, Duo Submarines, and Solo Submarines.
+- `tugboat.tugdecaystartdelayminutes` -- Determines how long until decay begins for the vehicle after it was last used, applying to Tug Boats.
+
 Some vehicles also have an internal multiplier that affects decay damage while under a roof.
 - Horses: `2.0x` decay damage while under a roof
 - Modular Cars: `0.1x` decay damage while under a roof
-- All Boats and Submarines: no decay damage while under a roof
+- All Boats and Submarines, except Tug Boats: no decay damage while under a roof
   - In vanilla, they also have to be in shallow water, but this plugin removes that restriction
 - Hot Air Balloons: no decay damage while under a roof
 - Snowmobiles and Tomahas: no decay damage while under a roof
@@ -62,6 +71,7 @@ Granting the following permissions to a player will cause their **owned** vehicl
 - `vehicledecayprotection.nodecay.snowmobile`
 - `vehicledecayprotection.nodecay.solosubmarine`
 - `vehicledecayprotection.nodecay.tomaha`
+- `vehicledecayprotection.nodecay.tugboat`
 
 **Note: Vehicles are never assigned an owner by the vanilla game, with the exception of deployable vehicles like Kayaks, so you will need another plugin to assign ownership to most vehicles in order to benefit from the `nodecay` permissions.**
 
@@ -87,7 +97,6 @@ Default configuration (equivalent to vanilla):
       "Allow the plugin to influence decay": true,
       "Decay multiplier while inside": 0.0,
       "Decay multiplier near tool cupboard": 1.0,
-      "Protect from decay after recent use (minutes)": 45.0,
       "Decay interval (seconds)": 60.0
     },
     "Hot Air Balloon": {
@@ -101,7 +110,6 @@ Default configuration (equivalent to vanilla):
       "Allow the plugin to influence decay": true,
       "Decay multiplier while inside": 0.0,
       "Decay multiplier near tool cupboard": 1.0,
-      "Protect from decay after recent use (minutes)": 45.0,
       "Decay interval (seconds)": 60.0
     },
     "Minicopter": {
@@ -122,7 +130,6 @@ Default configuration (equivalent to vanilla):
       "Allow the plugin to influence decay": true,
       "Decay multiplier while inside": 0.0,
       "Decay multiplier near tool cupboard": 1.0,
-      "Protect from decay after recent use (minutes)": 45.0,
       "Decay interval (seconds)": 60.0
     },
     "Ridable Horse": {
@@ -136,7 +143,6 @@ Default configuration (equivalent to vanilla):
       "Allow the plugin to influence decay": true,
       "Decay multiplier while inside": 0.0,
       "Decay multiplier near tool cupboard": 1.0,
-      "Protect from decay after recent use (minutes)": 45.0,
       "Decay interval (seconds)": 60.0
     },
     "Scrap Transport Helicopter": {
@@ -169,7 +175,6 @@ Default configuration (equivalent to vanilla):
       "Allow the plugin to influence decay": true,
       "Decay multiplier while inside": 0.0,
       "Decay multiplier near tool cupboard": 1.0,
-      "Protect from decay after recent use (minutes)": 45.0,
       "Decay interval (seconds)": 60.0
     },
     "Tomaha": {
@@ -177,6 +182,12 @@ Default configuration (equivalent to vanilla):
       "Decay multiplier while inside": 0.0,
       "Decay multiplier near tool cupboard": 1.0,
       "Protect from decay after recent use (minutes)": 45.0,
+      "Decay interval (seconds)": 60.0
+    },
+    "Tugboat": {
+      "Allow the plugin to influence decay": true,
+      "Decay multiplier while inside": 1.0,
+      "Decay multiplier near tool cupboard": 1.0,
       "Decay interval (seconds)": 60.0
     }
   }
@@ -191,11 +202,14 @@ Each vehicle type has the following options:
 - `Decay multiplier while inside` -- Determines how much to scale decay damage for vehicles that are inside (under a roof). Set to `0.0` to completely nullify decay damage to vehicles while they are inside. Setting to `1.0` will improve performance by avoiding even checking if the vehicle is inside.
 - `Decay multiplier near tool cupboard` -- Determines how much to scale decay damage for vehicles that are near **any** tool cupboard (regardless of whether the vehicle owner is authorized). Defaults to `1.0` which has no effect. Set to `0.0` to completely nullify decay damage near tool cupboards.
 - `Protect from decay after recent use (minutes)` -- Determines how many minutes to protect vehicles from decay after they have been used.
+  - Note: This option does not appear in the config for boats because there are already vanilla convars for that:
+    - `motorrowboat.decaystartdelayminutes` -- Applies to Row Boats, RHIBs, Kayaks, Duo Submarines, and Solo Submarines.
+    - `tugboat.tugdecaystartdelayminutes` -- Applies to Tug Boats.
 - `Decay interval (seconds)` -- Determines how often each vehicle can take decay damage. Raise this value to deal decay damage less frequently and to improve performance. The plugin will automatically compensate for slower schedules by dealing higher amounts of decay damage, so you don't have to worry about this affecting damage over time.
 
 ## Performance tips
 
-When carefully tuned, this plugin can actually improve the performance of decay calculation compared to vanilla. Here are some tips that can help you achieve that.
+When carefully tuned, this plugin can actually improve the performance of decay calculation compared to vanilla. Here are some tips that can help you maximize performance.
 
 - Set `Enable permission` to `false` when not using the permissions feature, to avoid checking vehicle owner permissions.
 - Raise `Protect from decay after recent use (minutes)` to increase the likelihood that other expensive checks are skipped.
