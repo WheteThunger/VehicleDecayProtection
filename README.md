@@ -18,11 +18,9 @@ Minicopters and Scrap Transport Helicopters:
 Row Boats, RHIBs, and Kayaks:
 - `motorrowboat.outsidedecayminutes`
 - `motorrowboat.deepwaterdecayminutes`
-- `motorrowboat.decaystartdelayminutes` (equivalent to `ProtectionMinutesAfterUse` config option)
 
 Tug Boats:
 - `tugboat.tugdecayminutes`
-- `tugboat.tugdecaystartdelayminutes` (equivalent to `ProtectionMinutesAfterUse` config option)
 
 Duo and Solo Submarines:
 - `basesubmarine.outsidedecayminutes`
