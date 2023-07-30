@@ -125,7 +125,7 @@ namespace Oxide.Plugins
                 || permission.GroupsHavePermission(userData.Groups, perm);
         }
 
-        private bool OwnerHasPermission(ulong ownerId, string vehicleSpecificNoDecayPerm)
+        private bool UserHasVehiclePermission(ulong ownerId, string vehicleSpecificNoDecayPerm)
         {
             if (ownerId == 0)
                 return false;
@@ -134,6 +134,21 @@ namespace Oxide.Plugins
 
             return UserHasPermission(userData, Permission_NoDecay_AllVehicles)
                 || UserHasPermission(userData, vehicleSpecificNoDecayPerm);
+        }
+
+        private bool VehiclePrivilegeHasPermission(BaseEntity vehicle, string vehicleSpecificNoDecayPerm)
+        {
+            var vehiclePrivilege = GetChildOfType<VehiclePrivilege>(vehicle);
+            if (vehiclePrivilege == null)
+                return false;
+
+            foreach (var entry in vehiclePrivilege.authorizedPlayers)
+            {
+                if (UserHasVehiclePermission(entry.userid, vehicleSpecificNoDecayPerm))
+                    return true;
+            }
+
+            return false;
         }
 
         private bool LockOwnerHasPermission(BaseEntity vehicle, string vehicleSpecificNoDecayPerm, out ulong lockOwnerId)
@@ -145,12 +160,24 @@ namespace Oxide.Plugins
                 return false;
 
             lockOwnerId = baseLock.OwnerID;
-            return OwnerHasPermission(baseLock.OwnerID, vehicleSpecificNoDecayPerm);
+            return UserHasVehiclePermission(baseLock.OwnerID, vehicleSpecificNoDecayPerm);
         }
 
         public static void LogInfo(string message) => Interface.Oxide.LogInfo($"[Vehicle Decay Protection] {message}");
         public static void LogError(string message) => Interface.Oxide.LogError($"[Vehicle Decay Protection] {message}");
         public static void LogWarning(string message) => Interface.Oxide.LogWarning($"[Vehicle Decay Protection] {message}");
+
+        private static T GetChildOfType<T>(BaseEntity entity) where T : BaseEntity
+        {
+            foreach (var child in entity.children)
+            {
+                var childOfType = child as T;
+                if (childOfType != null)
+                    return childOfType;
+            }
+
+            return null;
+        }
 
         private static string[] FindPrefabsOfType<T>() where T : BaseEntity
         {
@@ -224,7 +251,7 @@ namespace Oxide.Plugins
                 return false;
 
             pluginInstance.TrackStart();
-            var ownerHasPermission = pluginInstance.OwnerHasPermission(entity.OwnerID, vehicleInfo.Permission);
+            var ownerHasPermission = pluginInstance.UserHasVehiclePermission(entity.OwnerID, vehicleInfo.Permission);
             pluginInstance.TrackEnd();
 
             if (ownerHasPermission)
@@ -265,6 +292,25 @@ namespace Oxide.Plugins
 
                 #if DEBUG_LOG
                 LogWarning($"{entity.ShortPrefabName} :: Lock owner has permission :: {lockOwnerId}");
+                #endif
+
+                return true;
+            }
+
+            pluginInstance.TrackStart();
+            var privilegeHasPermission = entity is Tugboat && pluginInstance.VehiclePrivilegeHasPermission(entity, vehicleInfo.Permission);
+            pluginInstance.TrackStart();
+
+            if (privilegeHasPermission)
+            {
+                #if DEBUG_SHOW
+                foreach (var player in BasePlayer.activePlayerList)
+                {
+                    if (IsPlayerDrawEligible(player, entity))
+                    {
+                        DrawVehicleText(player, entity, vehicleInfo, Color.green, "Vehicle privilege permission");
+                    }
+                }
                 #endif
 
                 return true;

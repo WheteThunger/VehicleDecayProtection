@@ -85,6 +85,8 @@ Vehicle ownership is determined by the `OwnerID` property of the vehicle, which 
 
 Alternatively, if the vehicle has a **code lock** or **key lock** attached to it via [Vehicle Deployed Locks](https://umod.org/plugins/vehicle-deployed-locks), this plugin will also check the `nodecay` permissions of the lock owner, if the lock is locked.
 
+Tug Boats are a special case. As long as any authorized user has the `nodecay` permission, the tugboat will not decay.
+
 ## Configuration
 
 Default configuration (equivalent to vanilla):
