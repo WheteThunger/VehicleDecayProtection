@@ -15,7 +15,7 @@ using UnityEngine;
 
 namespace Oxide.Plugins
 {
-    [Info("Vehicle Decay Protection", "WhiteThunder", "2.4.0")]
+    [Info("Vehicle Decay Protection", "WhiteThunder", "2.4.1")]
     [Description("Protects vehicles from decay based on ownership and other factors.")]
     internal class VehicleDecayProtection : CovalencePlugin
     {
@@ -299,7 +299,7 @@ namespace Oxide.Plugins
 
             pluginInstance.TrackStart();
             var privilegeHasPermission = entity is Tugboat && pluginInstance.VehiclePrivilegeHasPermission(entity, vehicleInfo.Permission);
-            pluginInstance.TrackStart();
+            pluginInstance.TrackEnd();
 
             if (privilegeHasPermission)
             {
