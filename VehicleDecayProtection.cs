@@ -3,7 +3,6 @@
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using Newtonsoft.Json.Serialization;
 using Oxide.Core;
 using Oxide.Core.Libraries;
 using Rust;
@@ -15,7 +14,7 @@ using UnityEngine;
 
 namespace Oxide.Plugins
 {
-    [Info("Vehicle Decay Protection", "WhiteThunder", "2.4.1")]
+    [Info("Vehicle Decay Protection", "WhiteThunder", "2.4.2")]
     [Description("Protects vehicles from decay based on ownership and other factors.")]
     internal class VehicleDecayProtection : CovalencePlugin
     {
@@ -445,21 +444,21 @@ namespace Oxide.Plugins
             car.DoDecayDamage(amount);
         }
 
-        private static void MinicopterDecay(VehicleDecayProtection pluginInstance, MiniCopter miniCopter, IVehicleInfo vehicleInfo)
+        private static void HelicopterDecay(VehicleDecayProtection pluginInstance, PlayerHelicopter heli, IVehicleInfo vehicleInfo)
         {
-            if (miniCopter.healthFraction == 0f
-                || miniCopter.IsOn()
-                || WasRecentlyUsed(miniCopter, vehicleInfo)
-                || VehicleHasPermission(pluginInstance, miniCopter, vehicleInfo))
+            if (heli.healthFraction == 0f
+                || heli.IsOn()
+                || WasRecentlyUsed(heli, vehicleInfo)
+                || VehicleHasPermission(pluginInstance, heli, vehicleInfo))
                 return;
 
             bool isOutside;
-            var multiplier = GetLocationMultiplier(pluginInstance, miniCopter, vehicleInfo, out isOutside, forceOutsideCheck: true);
+            var multiplier = GetLocationMultiplier(pluginInstance, heli, vehicleInfo, out isOutside, forceOutsideCheck: true);
             if (multiplier == 0f)
                 return;
 
-            var decayMinutes = isOutside ? MiniCopter.outsidedecayminutes : MiniCopter.insidedecayminutes;
-            DoDecayDamage(miniCopter, vehicleInfo, multiplier / decayMinutes);
+            var decayMinutes = isOutside ? PlayerHelicopter.outsidedecayminutes : PlayerHelicopter.insidedecayminutes;
+            DoDecayDamage(heli, vehicleInfo, multiplier / decayMinutes);
         }
 
         private static void SnowmobileDecay(VehicleDecayProtection pluginInstance, Snowmobile snowmobile, IVehicleInfo vehicleInfo)
@@ -711,14 +710,14 @@ namespace Oxide.Plugins
                             MotorRowboat.deepwaterdecayminutes
                         ),
                     },
-                    new VehicleInfo<MiniCopter>
+                    new VehicleInfo<Minicopter>
                     {
                         VehicleType = "minicopter",
                         PrefabPaths = new[] { "assets/content/vehicles/minicopter/minicopter.entity.prefab" },
                         VehicleConfig = pluginConfig.Vehicles.Minicopter,
                         TimeSinceLastUsed = mini => UnityEngine.Time.time - mini.lastEngineOnTime,
                         VanillaDecayMethod = mini => mini.DecayTick,
-                        Decay = (mini, vehicleInfo) => MinicopterDecay(_pluginInstance, mini, vehicleInfo),
+                        Decay = (mini, vehicleInfo) => HelicopterDecay(_pluginInstance, mini, vehicleInfo),
                     },
                     new VehicleInfo<ModularCar>
                     {
@@ -831,7 +830,7 @@ namespace Oxide.Plugins
                         VehicleConfig = pluginConfig.Vehicles.ScrapTransportHelicopter,
                         TimeSinceLastUsed = heli => UnityEngine.Time.time - heli.lastEngineOnTime,
                         VanillaDecayMethod = heli => heli.DecayTick,
-                        Decay = (heli, vehicleInfo) => MinicopterDecay(_pluginInstance, heli, vehicleInfo),
+                        Decay = (heli, vehicleInfo) => HelicopterDecay(_pluginInstance, heli, vehicleInfo),
                     },
                     new VehicleInfo<Sled>
                     {
