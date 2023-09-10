@@ -14,7 +14,7 @@ using UnityEngine;
 
 namespace Oxide.Plugins
 {
-    [Info("Vehicle Decay Protection", "WhiteThunder", "2.4.2")]
+    [Info("Vehicle Decay Protection", "WhiteThunder", "2.5.0")]
     [Description("Protects vehicles from decay based on ownership and other factors.")]
     internal class VehicleDecayProtection : CovalencePlugin
     {
@@ -658,6 +658,15 @@ namespace Oxide.Plugins
             {
                 var allVehicles = new IVehicleInfo[]
                 {
+                    new VehicleInfo<AttackHelicopter>
+                    {
+                        VehicleType = "attackhelicopter",
+                        PrefabPaths = new[] { "assets/content/vehicles/attackhelicopter/attackhelicopter.entity.prefab" },
+                        VehicleConfig = pluginConfig.Vehicles.AttackHelicopter,
+                        TimeSinceLastUsed = heli => UnityEngine.Time.time - heli.lastEngineOnTime,
+                        VanillaDecayMethod = heli => heli.DecayTick,
+                        Decay = (heli, vehicleInfo) => HelicopterDecay(_pluginInstance, heli, vehicleInfo),
+                    },
                     new VehicleInfo<SubmarineDuo>
                     {
                         VehicleType = "duosubmarine",
@@ -964,6 +973,13 @@ namespace Oxide.Plugins
 
         private class VehicleConfigMap
         {
+            [JsonProperty("Attack Helicopter")]
+            public VehicleConfig AttackHelicopter = new VehicleConfig
+            {
+                DecayMultiplierInside = 1f,
+                ProtectionMinutesAfterUse = 10,
+            };
+
             [JsonProperty("Duo Submarine")]
             public VehicleConfig DuoSubmarine = new VehicleConfig
             {

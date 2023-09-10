@@ -11,9 +11,9 @@
 
 Vehicle decay is already somewhat configurable in the vanilla game using the following convars.
 
-Minicopters and Scrap Transport Helicopters:
-- `minicopter.insidedecayminutes`
-- `minicopter.outsidedecayminutes`
+Minicopters, Scrap Transport Helicopters, and Attack Helicopters:
+- `playerhelicopter.insidedecayminutes`
+- `playerhelicopter.outsidedecayminutes`
 
 Row Boats, RHIBs, and Kayaks:
 - `motorrowboat.outsidedecayminutes`
@@ -55,6 +55,7 @@ Some vehicles also have an internal multiplier that affects decay damage while u
 Granting the following permissions to a player will cause their **owned** vehicles to not decay under any circumstances. You can grant permissions by vehicle type, or for all vehicles with a single permission.
 
 - `vehicledecayprotection.nodecay.allvehicles` (all in one)
+- `vehicledecayprotection.nodecay.attackhelicopter`
 - `vehicledecayprotection.nodecay.duosubmarine`
 - `vehicledecayprotection.nodecay.hotairballoon`
 - `vehicledecayprotection.nodecay.kayak`
@@ -93,6 +94,13 @@ Default configuration (equivalent to vanilla):
 {
   "Enable permission": true,
   "Vehicles": {
+    "Attack Helicopter": {
+      "Allow the plugin to influence decay": true,
+      "Decay multiplier while inside": 1.0,
+      "Decay multiplier near tool cupboard": 1.0,
+      "Protect from decay after recent use (minutes)": 10.0,
+      "Decay interval (seconds)": 60.0
+    },
     "Duo Submarine": {
       "Allow the plugin to influence decay": true,
       "Decay multiplier while inside": 0.0,
