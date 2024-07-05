@@ -31,6 +31,7 @@ Snowmobile and Tomaha:
 
 Other:
 - `baseridableanimal.decayminutes`
+- `bike.outsidedecayminutes`
 - `hotairballoon.outsidedecayminutes`
 - `modularcar.outsidedecayminutes`
 
@@ -47,6 +48,7 @@ Some vehicles also have an internal multiplier that affects decay damage while u
   - In vanilla, they also have to be in shallow water, but this plugin removes that restriction
 - Hot Air Balloons: no decay damage while under a roof
 - Snowmobiles and Tomahas: no decay damage while under a roof
+- All Bikes: no decay damage while under a roof
 
 ## Permissions
 
@@ -61,6 +63,10 @@ Granting the following permissions to a player will cause their **owned** vehicl
 - `vehicledecayprotection.nodecay.kayak`
 - `vehicledecayprotection.nodecay.minicopter`
 - `vehicledecayprotection.nodecay.modularcar`
+- `vehicledecayprotection.nodecay.motorbike.sidecar`
+- `vehicledecayprotection.nodecay.motorbike`
+- `vehicledecayprotection.nodecay.pedalbike`
+- `vehicledecayprotection.nodecay.pedaltrike`
 - `vehicledecayprotection.nodecay.rhib`
 - `vehicledecayprotection.nodecay.ridablehorse`
 - `vehicledecayprotection.nodecay.rowboat`
@@ -132,6 +138,34 @@ Default configuration (equivalent to vanilla):
       "Decay multiplier while inside": 0.1,
       "Decay multiplier near tool cupboard": 1.0,
       "Protect from decay after recent use (minutes)": 10.0,
+      "Decay interval (seconds)": 60.0
+    },
+    "Motor Bike Sidecar": {
+      "Allow the plugin to influence decay": true,
+      "Decay multiplier while inside": 0.0,
+      "Decay multiplier near tool cupboard": 1.0,
+      "Protect from decay after recent use (minutes)": 45.0,
+      "Decay interval (seconds)": 60.0
+    },
+    "Motor Bike": {
+      "Allow the plugin to influence decay": true,
+      "Decay multiplier while inside": 0.0,
+      "Decay multiplier near tool cupboard": 1.0,
+      "Protect from decay after recent use (minutes)": 45.0,
+      "Decay interval (seconds)": 60.0
+    },
+    "Pedal Bike": {
+      "Allow the plugin to influence decay": true,
+      "Decay multiplier while inside": 0.0,
+      "Decay multiplier near tool cupboard": 1.0,
+      "Protect from decay after recent use (minutes)": 45.0,
+      "Decay interval (seconds)": 60.0
+    },
+    "Pedal Trike": {
+      "Allow the plugin to influence decay": true,
+      "Decay multiplier while inside": 0.0,
+      "Decay multiplier near tool cupboard": 1.0,
+      "Protect from decay after recent use (minutes)": 45.0,
       "Decay interval (seconds)": 60.0
     },
     "RHIB": {

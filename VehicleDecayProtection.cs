@@ -10,11 +10,12 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Reflection;
 using UnityEngine;
 
 namespace Oxide.Plugins
 {
-    [Info("Vehicle Decay Protection", "WhiteThunder", "2.5.0")]
+    [Info("Vehicle Decay Protection", "WhiteThunder", "2.6.0")]
     [Description("Protects vehicles from decay based on ownership and other factors.")]
     internal class VehicleDecayProtection : CovalencePlugin
     {
@@ -511,6 +512,21 @@ namespace Oxide.Plugins
             DoDecayDamage(sled, vehicleInfo, multiplier * sled.DecayAmount / sled.MaxHealth(), DamageType.Generic, useProtection: true);
         }
 
+        private static void BikeDecay(VehicleDecayProtection pluginInstance, Bike bike, IVehicleInfo vehicleInfo)
+        {
+            if (bike.IsDead()
+                || WasRecentlyUsed(bike, vehicleInfo)
+                || VehicleHasPermission(pluginInstance, bike, vehicleInfo))
+                return;
+
+            bool isOutside;
+            var multiplier = GetLocationMultiplier(pluginInstance, bike, vehicleInfo, out isOutside, forceOutsideCheck: true);
+            if (multiplier == 0f)
+                return;
+
+            DoDecayDamage(bike, vehicleInfo, multiplier / Bike.outsideDecayMinutes);
+        }
+
         #endregion
 
         #region Vehicle Decay Component
@@ -581,17 +597,17 @@ namespace Oxide.Plugins
 
             public Func<T, float> TimeSinceLastUsed = (entity) =>
             {
-                throw new NotImplementedException();
+                throw new NotImplementedException($"TimeSinceLastUsed: {entity.ShortPrefabName}");
             };
 
             public Func<T, Action> VanillaDecayMethod = (entity) =>
             {
-                throw new NotImplementedException();
+                throw new NotImplementedException($"VanillaDecayMethod: {entity.ShortPrefabName}");
             };
 
             public Action<T, IVehicleInfo> Decay = (entity, vehicleInfo) =>
             {
-                throw new NotImplementedException();
+                throw new NotImplementedException($"Decay: {entity.ShortPrefabName}");
             };
 
             public void OnServerInitialized(VehicleDecayProtection pluginInstance)
@@ -645,6 +661,9 @@ namespace Oxide.Plugins
 
         private class VehicleInfoManager
         {
+            private static readonly FieldInfo BikeTimeSinceLastUsedField = typeof(Bike).GetField("timeSinceLastUsed",
+                BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+
             private VehicleDecayProtection _pluginInstance;
 
             private readonly Dictionary<uint, IVehicleInfo> _prefabIdToVehicleInfo = new Dictionary<uint, IVehicleInfo>();
@@ -666,6 +685,42 @@ namespace Oxide.Plugins
                         TimeSinceLastUsed = heli => UnityEngine.Time.time - heli.lastEngineOnTime,
                         VanillaDecayMethod = heli => heli.DecayTick,
                         Decay = (heli, vehicleInfo) => HelicopterDecay(_pluginInstance, heli, vehicleInfo),
+                    },
+                    new VehicleInfo<Bike>
+                    {
+                        VehicleType = "motorbike.sidecar",
+                        PrefabPaths = new[] { "assets/content/vehicles/bikes/motorbike_sidecar.prefab" },
+                        VehicleConfig = pluginConfig.Vehicles.MotorBikeSidecar,
+                        TimeSinceLastUsed = bike => (TimeSince)BikeTimeSinceLastUsedField.GetValue(bike),
+                        VanillaDecayMethod = bike => bike.BikeDecay,
+                        Decay = (bike, vehicleInfo) => BikeDecay(_pluginInstance, bike, vehicleInfo),
+                    },
+                    new VehicleInfo<Bike>
+                    {
+                        VehicleType = "motorbike",
+                        PrefabPaths = new[] { "assets/content/vehicles/bikes/motorbike.prefab" },
+                        VehicleConfig = pluginConfig.Vehicles.MotorBike,
+                        TimeSinceLastUsed = bike => (TimeSince)BikeTimeSinceLastUsedField.GetValue(bike),
+                        VanillaDecayMethod = bike => bike.BikeDecay,
+                        Decay = (bike, vehicleInfo) => BikeDecay(_pluginInstance, bike, vehicleInfo),
+                    },
+                    new VehicleInfo<Bike>
+                    {
+                        VehicleType = "pedalbike",
+                        PrefabPaths = new[] { "assets/content/vehicles/bikes/pedalbike.prefab" },
+                        VehicleConfig = pluginConfig.Vehicles.PedalBike,
+                        TimeSinceLastUsed = bike => (TimeSince)BikeTimeSinceLastUsedField.GetValue(bike),
+                        VanillaDecayMethod = bike => bike.BikeDecay,
+                        Decay = (bike, vehicleInfo) => BikeDecay(_pluginInstance, bike, vehicleInfo),
+                    },
+                    new VehicleInfo<Bike>
+                    {
+                        VehicleType = "pedaltrike",
+                        PrefabPaths = new[] { "assets/content/vehicles/bikes/pedaltrike.prefab" },
+                        VehicleConfig = pluginConfig.Vehicles.PedalTrike,
+                        TimeSinceLastUsed = bike => (TimeSince)BikeTimeSinceLastUsedField.GetValue(bike),
+                        VanillaDecayMethod = bike => bike.BikeDecay,
+                        Decay = (bike, vehicleInfo) => BikeDecay(_pluginInstance, bike, vehicleInfo),
                     },
                     new VehicleInfo<SubmarineDuo>
                     {
@@ -1023,6 +1078,34 @@ namespace Oxide.Plugins
 
             [JsonProperty("ModularCar")]
             private VehicleConfig DeprecatedModularCar { set { ModularCar = value; } }
+
+            [JsonProperty("Motor Bike")]
+            public VehicleConfig MotorBike = new VehicleConfig
+            {
+                DecayMultiplierInside = 0f,
+                ProtectionMinutesAfterUse = 45,
+            };
+
+            [JsonProperty("Motor Bike Sidecar")]
+            public VehicleConfig MotorBikeSidecar = new VehicleConfig
+            {
+                DecayMultiplierInside = 0f,
+                ProtectionMinutesAfterUse = 45,
+            };
+
+            [JsonProperty("Pedal Bike")]
+            public VehicleConfig PedalBike = new VehicleConfig
+            {
+                DecayMultiplierInside = 0f,
+                ProtectionMinutesAfterUse = 45,
+            };
+
+            [JsonProperty("Pedal Trike")]
+            public VehicleConfig PedalTrike = new VehicleConfig
+            {
+                DecayMultiplierInside = 0f,
+                ProtectionMinutesAfterUse = 45,
+            };
 
             [JsonProperty("RHIB")]
             public VehicleConfig RHIB = new VehicleConfig
