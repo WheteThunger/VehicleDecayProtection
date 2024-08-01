@@ -15,7 +15,7 @@ using UnityEngine;
 
 namespace Oxide.Plugins
 {
-    [Info("Vehicle Decay Protection", "WhiteThunder", "2.6.0")]
+    [Info("Vehicle Decay Protection", "WhiteThunder", "2.6.1")]
     [Description("Protects vehicles from decay based on ownership and other factors.")]
     internal class VehicleDecayProtection : CovalencePlugin
     {
@@ -742,7 +742,7 @@ namespace Oxide.Plugins
                         VehicleType = "hotairballoon",
                         PrefabPaths = new[] { "assets/prefabs/deployable/hot air balloon/hotairballoon.prefab" },
                         VehicleConfig = pluginConfig.Vehicles.HotAirBalloon,
-                        TimeSinceLastUsed = hab => UnityEngine.Time.time - hab.lastBlastTime,
+                        TimeSinceLastUsed = hab => UnityEngine.Time.time - hab.sinceLastBlast,
                         VanillaDecayMethod = hab => hab.DecayTick,
                         Decay = (hab, vehicleInfo) =>
                         {
