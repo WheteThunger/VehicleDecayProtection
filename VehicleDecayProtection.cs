@@ -15,7 +15,7 @@ using UnityEngine;
 
 namespace Oxide.Plugins
 {
-    [Info("Vehicle Decay Protection", "WhiteThunder", "2.6.1")]
+    [Info("Vehicle Decay Protection", "WhiteThunder", "2.6.2")]
     [Description("Protects vehicles from decay based on ownership and other factors.")]
     internal class VehicleDecayProtection : CovalencePlugin
     {
@@ -540,7 +540,11 @@ namespace Oxide.Plugins
                 component._vehicleInfo = vehicleInfo;
 
                 // Cancel vanilla decay.
-                entity.CancelInvoke(vehicleInfo.GetVanillaDecayMethod(entity));
+                var vanillaDecayMethod = vehicleInfo.GetVanillaDecayMethod(entity);
+                if (vanillaDecayMethod != null)
+                {
+                    entity.CancelInvoke(vanillaDecayMethod);
+                }
 
                 // Enable custom decay.
                 SetupDecayTick(component, component.DecayTick, vehicleInfo.VehicleConfig.DecayIntervalSeconds);
@@ -553,7 +557,11 @@ namespace Oxide.Plugins
                     return;
 
                 // Enable vanilla decay.
-                SetupDecayTick(entity, component._vehicleInfo.GetVanillaDecayMethod(entity), VanillaDecaySeconds);
+                var vanillaDecayMethod = component._vehicleInfo.GetVanillaDecayMethod(entity);
+                if (vanillaDecayMethod != null)
+                {
+                    SetupDecayTick(entity, vanillaDecayMethod, VanillaDecaySeconds);
+                }
 
                 // Cancel custom decay.
                 DestroyImmediate(component);
@@ -571,6 +579,36 @@ namespace Oxide.Plugins
         #endregion
 
         #region Vehicle Info
+
+        private struct HorseInfo
+        {
+            public static HorseInfo FromHorse(RidableHorse ridableHorse)
+            {
+                return new HorseInfo
+                {
+                    IsForSale = ridableHorse.IsForSale(),
+                    LastEatTime = ridableHorse.lastEatTime,
+                    NextDecayTime = ridableHorse.nextDecayTime,
+                    LastInputTime = ridableHorse.lastInputTime,
+                };
+            }
+
+            public static HorseInfo FromHorse(RidableHorse2 ridableHorse2)
+            {
+                return new HorseInfo
+                {
+                    IsForSale = ridableHorse2.IsForSale,
+                    LastEatTime = ridableHorse2.lastEatTime,
+                    NextDecayTime = ridableHorse2.nextDecayTime,
+                    LastInputTime = ridableHorse2.lastRiddenTime,
+                };
+            }
+
+            public bool IsForSale;
+            public float LastEatTime;
+            public float NextDecayTime;
+            public float LastInputTime;
+        }
 
         private interface IVehicleInfo
         {
@@ -840,21 +878,62 @@ namespace Oxide.Plugins
                             );
                         }
                     },
-                    new VehicleInfo<RidableHorse>
+                    // Using BaseVehicle since it's the closest base class of RidableHorse and RidableHorse2.
+                    new VehicleInfo<BaseVehicle>
                     {
                         VehicleType = "ridablehorse",
-                        PrefabPaths = new[] { "assets/rust.ai/nextai/testridablehorse.prefab" },
+                        PrefabPaths = new[]
+                        {
+                            "assets/content/vehicles/horse/ridablehorse2.prefab",
+                            "assets/content/vehicles/horse/_old/testridablehorse.prefab",
+                            "assets/rust.ai/nextai/testridablehorse.prefab",
+                        },
                         VehicleConfig = pluginConfig.Vehicles.RidableHorse,
-                        TimeSinceLastUsed = horse => UnityEngine.Time.time - horse.lastInputTime,
-                        VanillaDecayMethod = horse => horse.AnimalDecay,
+                        TimeSinceLastUsed = horse =>
+                        {
+                            var lastInputTime = horse switch
+                            {
+                                RidableHorse ridableHorse => ridableHorse.lastInputTime,
+                                RidableHorse2 ridableHorse2 => ridableHorse2.lastRiddenTime,
+                                _ => UnityEngine.Time.time,
+                            };
+
+                            return UnityEngine.Time.time - lastInputTime;
+                        },
+                        VanillaDecayMethod = horse =>
+                        {
+                            if (horse is RidableHorse ridableHorse)
+                                return ridableHorse.AnimalDecay;
+
+                            if (horse is RidableHorse2 ridableHorse2)
+                                return ridableHorse2.HorseDecay;
+
+                            return null;
+                        },
                         Decay = (horse, vehicleInfo) =>
                         {
                             if (horse.healthFraction == 0f
                                 || horse.IsDestroyed
-                                || WasRecentlyUsed(horse, vehicleInfo)
-                                || UnityEngine.Time.time < horse.lastEatTime + 600f
-                                || horse.IsForSale()
-                                || UnityEngine.Time.time < horse.nextDecayTime
+                                || WasRecentlyUsed(horse, vehicleInfo))
+                                return;
+
+                            HorseInfo horseInfo;
+
+                            switch (horse)
+                            {
+                                case RidableHorse ridableHorse:
+                                    horseInfo = HorseInfo.FromHorse(ridableHorse);
+                                    break;
+                                case RidableHorse2 ridableHorse2:
+                                    horseInfo = HorseInfo.FromHorse(ridableHorse2);
+                                    break;
+                                default:
+                                    return;
+                            }
+
+                            if (UnityEngine.Time.time < horseInfo.LastEatTime + 600f
+                                || horseInfo.IsForSale
+                                || UnityEngine.Time.time < horseInfo.NextDecayTime
                                 || VehicleHasPermission(_pluginInstance, horse, vehicleInfo))
                                 return;
 
@@ -863,7 +942,7 @@ namespace Oxide.Plugins
                                 return;
 
                             DoDecayDamage(horse, vehicleInfo, multiplier / BaseRidableAnimal.decayminutes);
-                        }
+                        },
                     },
                     new VehicleInfo<MotorRowboat>
                     {
