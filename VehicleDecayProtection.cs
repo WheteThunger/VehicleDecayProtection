@@ -1154,12 +1154,15 @@ namespace Oxide.Plugins
 
         private class VehicleConfigMap
         {
-            [JsonProperty("Attack Helicopter")]
-            public VehicleConfig AttackHelicopter = new()
+            [JsonProperty("Ridable Horse")]
+            public VehicleConfig RidableHorse = new()
             {
-                DecayMultiplierInside = 1f,
+                DecayMultiplierInside = 2,
                 ProtectionMinutesAfterUse = 10,
             };
+
+            [JsonProperty("RidableHorse")]
+            private VehicleConfig DeprecatedRidableHorse { set => RidableHorse = value; }
 
             [JsonProperty("Ballista")]
             public VehicleConfig Ballista = new()
@@ -1187,40 +1190,6 @@ namespace Oxide.Plugins
             {
                 DecayMultiplierInside = 0.1f,
                 ProtectionMinutesAfterUse = 5,
-            };
-
-            [JsonProperty("Duo Submarine")]
-            public VehicleConfig DuoSubmarine = new()
-            {
-                DecayMultiplierInside = 0f,
-                ProtectionMinutesAfterUse = -1,
-            };
-
-            [JsonProperty("DuoSubmarine")]
-            private VehicleConfig DeprecatedDuoSubmarine { set => DuoSubmarine = value; }
-
-            [JsonProperty("Hot Air Balloon")]
-            public VehicleConfig HotAirBalloon = new()
-            {
-                DecayMultiplierInside = 0f,
-                ProtectionMinutesAfterUse = 10,
-            };
-
-            [JsonProperty("HotAirBalloon")]
-            private VehicleConfig DeprecatedHotAirBalloon { set => HotAirBalloon = value; }
-
-            [JsonProperty("Kayak")]
-            public VehicleConfig Kayak = new()
-            {
-                DecayMultiplierInside = 0f,
-                ProtectionMinutesAfterUse = -1,
-            };
-
-            [JsonProperty("Minicopter")]
-            public VehicleConfig Minicopter = new()
-            {
-                DecayMultiplierInside = 1f,
-                ProtectionMinutesAfterUse = 10,
             };
 
             [JsonProperty("Modular Car")]
@@ -1261,39 +1230,19 @@ namespace Oxide.Plugins
                 ProtectionMinutesAfterUse = 45,
             };
 
-            [JsonProperty("RHIB")]
-            public VehicleConfig RHIB = new()
+            [JsonProperty("Snowmobile")]
+            public VehicleConfig Snowmobile = new()
             {
                 DecayMultiplierInside = 0f,
-                ProtectionMinutesAfterUse = -1,
+                ProtectionMinutesAfterUse = 45,
             };
 
-            [JsonProperty("Ridable Horse")]
-            public VehicleConfig RidableHorse = new()
-            {
-                DecayMultiplierInside = 2,
-                ProtectionMinutesAfterUse = 10,
-            };
-
-            [JsonProperty("RidableHorse")]
-            private VehicleConfig DeprecatedRidableHorse { set => RidableHorse = value; }
-
-            [JsonProperty("Rowboat")]
-            public VehicleConfig Rowboat = new()
+            [JsonProperty("Tomaha")]
+            public VehicleConfig Tomaha = new()
             {
                 DecayMultiplierInside = 0f,
-                ProtectionMinutesAfterUse = -1,
+                ProtectionMinutesAfterUse = 45,
             };
-
-            [JsonProperty("Scrap Transport Helicopter")]
-            public VehicleConfig ScrapTransportHelicopter = new()
-            {
-                DecayMultiplierInside = 1f,
-                ProtectionMinutesAfterUse = 10,
-            };
-
-            [JsonProperty("ScrapTransportHelicopter")]
-            private VehicleConfig DeprecatedScrapTransportHelicopter { set => ScrapTransportHelicopter = value; }
 
             [JsonProperty("Sled")]
             public VehicleConfig Sled = new()
@@ -1312,11 +1261,31 @@ namespace Oxide.Plugins
             [JsonProperty("Sled.Xmas")]
             private VehicleConfig DeprecatedSledXmas { set => SledXmas = value; }
 
-            [JsonProperty("Snowmobile")]
-            public VehicleConfig Snowmobile = new()
+            [JsonProperty("Kayak")]
+            public VehicleConfig Kayak = new()
             {
                 DecayMultiplierInside = 0f,
-                ProtectionMinutesAfterUse = 45,
+                ProtectionMinutesAfterUse = -1,
+            };
+
+            [JsonProperty("Rowboat")]
+            public VehicleConfig Rowboat = new()
+            {
+                DecayMultiplierInside = 0f,
+                ProtectionMinutesAfterUse = -1,
+            };
+
+            [JsonProperty("RHIB")]
+            public VehicleConfig RHIB = new()
+            {
+                DecayMultiplierInside = 0f,
+                ProtectionMinutesAfterUse = -1,
+            };
+
+            [JsonProperty("Tugboat")]
+            public VehicleConfig Tugboat = new()
+            {
+                ProtectionMinutesAfterUse = -1,
             };
 
             [JsonProperty("Solo Submarine")]
@@ -1329,17 +1298,48 @@ namespace Oxide.Plugins
             [JsonProperty("SoloSubmarine")]
             private VehicleConfig DeprecatedSoloSubmarine { set => SoloSubmarine = value; }
 
-            [JsonProperty("Tomaha")]
-            public VehicleConfig Tomaha = new()
+            [JsonProperty("Duo Submarine")]
+            public VehicleConfig DuoSubmarine = new()
             {
                 DecayMultiplierInside = 0f,
-                ProtectionMinutesAfterUse = 45,
+                ProtectionMinutesAfterUse = -1,
             };
 
-            [JsonProperty("Tugboat")]
-            public VehicleConfig Tugboat = new()
+            [JsonProperty("DuoSubmarine")]
+            private VehicleConfig DeprecatedDuoSubmarine { set => DuoSubmarine = value; }
+
+            [JsonProperty("Hot Air Balloon")]
+            public VehicleConfig HotAirBalloon = new()
             {
-                ProtectionMinutesAfterUse = -1,
+                DecayMultiplierInside = 0f,
+                ProtectionMinutesAfterUse = 10,
+            };
+
+            [JsonProperty("HotAirBalloon")]
+            private VehicleConfig DeprecatedHotAirBalloon { set => HotAirBalloon = value; }
+
+            [JsonProperty("Minicopter")]
+            public VehicleConfig Minicopter = new()
+            {
+                DecayMultiplierInside = 1f,
+                ProtectionMinutesAfterUse = 10,
+            };
+
+            [JsonProperty("Scrap Transport Helicopter")]
+            public VehicleConfig ScrapTransportHelicopter = new()
+            {
+                DecayMultiplierInside = 1f,
+                ProtectionMinutesAfterUse = 10,
+            };
+
+            [JsonProperty("ScrapTransportHelicopter")]
+            private VehicleConfig DeprecatedScrapTransportHelicopter { set => ScrapTransportHelicopter = value; }
+
+            [JsonProperty("Attack Helicopter")]
+            public VehicleConfig AttackHelicopter = new()
+            {
+                DecayMultiplierInside = 1f,
+                ProtectionMinutesAfterUse = 10,
             };
         }
 

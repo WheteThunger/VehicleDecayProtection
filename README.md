@@ -107,9 +107,9 @@ Default configuration (equivalent to vanilla):
 {
   "Enable permission": true,
   "Vehicles": {
-    "Attack Helicopter": {
+    "Ridable Horse": {
       "Allow the plugin to influence decay": true,
-      "Decay multiplier while inside": 1.0,
+      "Decay multiplier while inside": 2.0,
       "Decay multiplier near tool cupboard": 1.0,
       "Protect from decay after recent use (minutes)": 10.0,
       "Decay interval (seconds)": 60.0
@@ -140,32 +140,6 @@ Default configuration (equivalent to vanilla):
       "Decay multiplier while inside": 0.1,
       "Decay multiplier near tool cupboard": 1.0,
       "Protect from decay after recent use (minutes)": 5.0,
-      "Decay interval (seconds)": 60.0
-    },
-    "Duo Submarine": {
-      "Allow the plugin to influence decay": true,
-      "Decay multiplier while inside": 0.0,
-      "Decay multiplier near tool cupboard": 1.0,
-      "Decay interval (seconds)": 60.0
-    },
-    "Hot Air Balloon": {
-      "Allow the plugin to influence decay": true,
-      "Decay multiplier while inside": 0.0,
-      "Decay multiplier near tool cupboard": 1.0,
-      "Protect from decay after recent use (minutes)": 10.0,
-      "Decay interval (seconds)": 60.0
-    },
-    "Kayak": {
-      "Allow the plugin to influence decay": true,
-      "Decay multiplier while inside": 0.0,
-      "Decay multiplier near tool cupboard": 1.0,
-      "Decay interval (seconds)": 60.0
-    },
-    "Minicopter": {
-      "Allow the plugin to influence decay": true,
-      "Decay multiplier while inside": 1.0,
-      "Decay multiplier near tool cupboard": 1.0,
-      "Protect from decay after recent use (minutes)": 10.0,
       "Decay interval (seconds)": 60.0
     },
     "Modular Car": {
@@ -203,30 +177,18 @@ Default configuration (equivalent to vanilla):
       "Protect from decay after recent use (minutes)": 45.0,
       "Decay interval (seconds)": 60.0
     },
-    "RHIB": {
+    "Snowmobile": {
       "Allow the plugin to influence decay": true,
       "Decay multiplier while inside": 0.0,
       "Decay multiplier near tool cupboard": 1.0,
+      "Protect from decay after recent use (minutes)": 45.0,
       "Decay interval (seconds)": 60.0
     },
-    "Ridable Horse": {
-      "Allow the plugin to influence decay": true,
-      "Decay multiplier while inside": 2.0,
-      "Decay multiplier near tool cupboard": 1.0,
-      "Protect from decay after recent use (minutes)": 10.0,
-      "Decay interval (seconds)": 60.0
-    },
-    "Rowboat": {
+    "Tomaha": {
       "Allow the plugin to influence decay": true,
       "Decay multiplier while inside": 0.0,
       "Decay multiplier near tool cupboard": 1.0,
-      "Decay interval (seconds)": 60.0
-    },
-    "Scrap Transport Helicopter": {
-      "Allow the plugin to influence decay": true,
-      "Decay multiplier while inside": 1.0,
-      "Decay multiplier near tool cupboard": 1.0,
-      "Protect from decay after recent use (minutes)": 10.0,
+      "Protect from decay after recent use (minutes)": 45.0,
       "Decay interval (seconds)": 60.0
     },
     "Sled": {
@@ -241,11 +203,28 @@ Default configuration (equivalent to vanilla):
       "Decay multiplier near tool cupboard": 1.0,
       "Decay interval (seconds)": 60.0
     },
-    "Snowmobile": {
+    "Kayak": {
       "Allow the plugin to influence decay": true,
       "Decay multiplier while inside": 0.0,
       "Decay multiplier near tool cupboard": 1.0,
-      "Protect from decay after recent use (minutes)": 45.0,
+      "Decay interval (seconds)": 60.0
+    },
+    "Rowboat": {
+      "Allow the plugin to influence decay": true,
+      "Decay multiplier while inside": 0.0,
+      "Decay multiplier near tool cupboard": 1.0,
+      "Decay interval (seconds)": 60.0
+    },
+    "RHIB": {
+      "Allow the plugin to influence decay": true,
+      "Decay multiplier while inside": 0.0,
+      "Decay multiplier near tool cupboard": 1.0,
+      "Decay interval (seconds)": 60.0
+    },
+    "Tugboat": {
+      "Allow the plugin to influence decay": true,
+      "Decay multiplier while inside": 1.0,
+      "Decay multiplier near tool cupboard": 1.0,
       "Decay interval (seconds)": 60.0
     },
     "Solo Submarine": {
@@ -254,17 +233,38 @@ Default configuration (equivalent to vanilla):
       "Decay multiplier near tool cupboard": 1.0,
       "Decay interval (seconds)": 60.0
     },
-    "Tomaha": {
+    "Duo Submarine": {
       "Allow the plugin to influence decay": true,
       "Decay multiplier while inside": 0.0,
       "Decay multiplier near tool cupboard": 1.0,
-      "Protect from decay after recent use (minutes)": 45.0,
       "Decay interval (seconds)": 60.0
     },
-    "Tugboat": {
+    "Hot Air Balloon": {
+      "Allow the plugin to influence decay": true,
+      "Decay multiplier while inside": 0.0,
+      "Decay multiplier near tool cupboard": 1.0,
+      "Protect from decay after recent use (minutes)": 10.0,
+      "Decay interval (seconds)": 60.0
+    },
+    "Minicopter": {
       "Allow the plugin to influence decay": true,
       "Decay multiplier while inside": 1.0,
       "Decay multiplier near tool cupboard": 1.0,
+      "Protect from decay after recent use (minutes)": 10.0,
+      "Decay interval (seconds)": 60.0
+    },
+    "Scrap Transport Helicopter": {
+      "Allow the plugin to influence decay": true,
+      "Decay multiplier while inside": 1.0,
+      "Decay multiplier near tool cupboard": 1.0,
+      "Protect from decay after recent use (minutes)": 10.0,
+      "Decay interval (seconds)": 60.0
+    },
+    "Attack Helicopter": {
+      "Allow the plugin to influence decay": true,
+      "Decay multiplier while inside": 1.0,
+      "Decay multiplier near tool cupboard": 1.0,
+      "Protect from decay after recent use (minutes)": 10.0,
       "Decay interval (seconds)": 60.0
     }
   }
