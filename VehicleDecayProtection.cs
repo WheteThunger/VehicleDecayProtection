@@ -112,6 +112,10 @@ namespace Oxide.Plugins
 
         private void HandleEntitySpawned(BaseEntity entity)
         {
+            // Null check because some people reported seeing GetVehicleInfo throw NRE, though this shouldn't happen.
+            if (entity == null)
+                return;
+
             var vehicleInfo = _vehicleInfoManager.GetVehicleInfo(entity);
             if (vehicleInfo == null || !vehicleInfo.VehicleConfig.Enabled)
                 return;
