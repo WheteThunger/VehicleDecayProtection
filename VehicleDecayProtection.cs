@@ -26,8 +26,10 @@ namespace Oxide.Plugins
         private const string Permission_NoDecay_AllVehicles = "vehicledecayprotection.nodecay.allvehicles";
 
         private const float VanillaDecaySeconds = 60f;
+        #if DEBUG_SHOW
         private const float MaxDrawSeconds = 30f;
         private const float MaxDrawDistanceSquared = 10000f;
+        #endif
 
         private readonly VehicleInfoManager _vehicleInfoManager;
 
@@ -52,7 +54,7 @@ namespace Oxide.Plugins
             foreach (var networkable in BaseNetworkable.serverEntities)
             {
                 var entity = networkable as BaseEntity;
-                if (entity is BaseVehicle || entity is HotAirBalloon)
+                if (entity is BaseVehicle or HotAirBalloon)
                 {
                     HandleEntitySpawned(entity);
                 }
@@ -64,7 +66,7 @@ namespace Oxide.Plugins
             foreach (var networkable in BaseNetworkable.serverEntities)
             {
                 var entity = networkable as BaseEntity;
-                if (entity is BaseVehicle || entity is HotAirBalloon)
+                if (entity is BaseVehicle or HotAirBalloon)
                 {
                     var vehicleInfo = _vehicleInfoManager.GetVehicleInfo(entity);
                     if (vehicleInfo == null)
@@ -102,8 +104,7 @@ namespace Oxide.Plugins
                 if (entity == null || entity.IsDestroyed)
                     return;
 
-                var hookResult = ExposedHooks.OnVehicleDecayReplace(entity);
-                if (hookResult is bool && !(bool)hookResult)
+                if (ExposedHooks.OnVehicleDecayReplace(entity) is false)
                     return;
 
                 VehicleDecayReplacer.AddToEntity(entity, vehicleInfo);
@@ -199,6 +200,7 @@ namespace Oxide.Plugins
             return prefabList.ToArray();
         }
 
+        #if DEBUG_SHOW
         private static bool IsPlayerDrawEligible(BasePlayer player, BaseEntity entity)
         {
             return player.IsAdmin
@@ -215,6 +217,7 @@ namespace Oxide.Plugins
                 $"<size=20>VDP ({vehicleInfo.VehicleConfig.DecayIntervalSeconds}s)\n{text}</size>"
             );
         }
+        #endif
 
         private static void SetupDecayTick(FacepunchBehaviour component, Action action, float time)
         {
@@ -295,7 +298,7 @@ namespace Oxide.Plugins
                 #endif
 
                 #if DEBUG_LOG
-                LogWarning($"{entity.ShortPrefabName} :: Lock owner has permission :: {lockOwnerId}");
+                LogWarning($"{entity.ShortPrefabName} :: Lock owner has permission");
                 #endif
 
                 return true;
@@ -396,16 +399,12 @@ namespace Oxide.Plugins
                 return 0f;
 
             multiplier *= GetNearTCMultiplier(pluginInstance, entity, vehicleInfo);
-            if (multiplier == 0f)
-                return 0f;
-
-            return multiplier;
+            return multiplier == 0f ? 0f : multiplier;
         }
 
         private static float GetLocationMultiplier(VehicleDecayProtection pluginInstance, BaseEntity entity, IVehicleInfo vehicleInfo)
         {
-            bool isOutside;
-            return GetLocationMultiplier(pluginInstance, entity, vehicleInfo, out isOutside);
+            return GetLocationMultiplier(pluginInstance, entity, vehicleInfo, out _);
         }
 
         private static void DoDecayDamage(BaseCombatEntity entity, IVehicleInfo vehicleInfo, float fraction, DamageType damageType = DamageType.Decay, bool useProtection = false)
@@ -457,8 +456,7 @@ namespace Oxide.Plugins
                 || VehicleHasPermission(pluginInstance, heli, vehicleInfo))
                 return;
 
-            bool isOutside;
-            var multiplier = GetLocationMultiplier(pluginInstance, heli, vehicleInfo, out isOutside, forceOutsideCheck: true);
+            var multiplier = GetLocationMultiplier(pluginInstance, heli, vehicleInfo, out var isOutside, forceOutsideCheck: true);
             if (multiplier == 0f)
                 return;
 
@@ -523,8 +521,7 @@ namespace Oxide.Plugins
                 || VehicleHasPermission(pluginInstance, bike, vehicleInfo))
                 return;
 
-            bool isOutside;
-            var multiplier = GetLocationMultiplier(pluginInstance, bike, vehicleInfo, out isOutside, forceOutsideCheck: true);
+            var multiplier = GetLocationMultiplier(pluginInstance, bike, vehicleInfo, out _, forceOutsideCheck: true);
             if (multiplier == 0f)
                 return;
 
@@ -593,7 +590,6 @@ namespace Oxide.Plugins
                     IsForSale = ridableHorse.IsForSale(),
                     LastEatTime = ridableHorse.lastEatTime,
                     NextDecayTime = ridableHorse.nextDecayTime,
-                    LastInputTime = ridableHorse.lastInputTime,
                 };
             }
 
@@ -604,14 +600,12 @@ namespace Oxide.Plugins
                     IsForSale = ridableHorse2.IsForSale,
                     LastEatTime = ridableHorse2.lastEatTime,
                     NextDecayTime = ridableHorse2.nextDecayTime,
-                    LastInputTime = ridableHorse2.lastRiddenTime,
                 };
             }
 
             public bool IsForSale;
             public float LastEatTime;
             public float NextDecayTime;
-            public float LastInputTime;
         }
 
         private interface IVehicleInfo
@@ -708,7 +702,7 @@ namespace Oxide.Plugins
 
             private VehicleDecayProtection _pluginInstance;
 
-            private readonly Dictionary<uint, IVehicleInfo> _prefabIdToVehicleInfo = new Dictionary<uint, IVehicleInfo>();
+            private readonly Dictionary<uint, IVehicleInfo> _prefabIdToVehicleInfo = new();
 
             public VehicleInfoManager(VehicleDecayProtection pluginInstance)
             {
@@ -1067,8 +1061,7 @@ namespace Oxide.Plugins
 
             public IVehicleInfo GetVehicleInfo(BaseEntity entity)
             {
-                IVehicleInfo vehicleInfo;
-                return _prefabIdToVehicleInfo.TryGetValue(entity.prefabID, out vehicleInfo) && vehicleInfo.IsCorrectType(entity)
+                return _prefabIdToVehicleInfo.TryGetValue(entity.prefabID, out var vehicleInfo) && vehicleInfo.IsCorrectType(entity)
                     ? vehicleInfo
                     : null;
             }
@@ -1087,186 +1080,186 @@ namespace Oxide.Plugins
             public float DecayMultiplierInside = 1;
 
             [JsonProperty("DecayMultiplierInside")]
-            private float DeprecatedDecayMultiplierInside { set { DecayMultiplierInside = value; } }
+            private float DeprecatedDecayMultiplierInside { set => DecayMultiplierInside = value; }
 
             [JsonProperty("Decay multiplier near tool cupboard")]
             public float DecayMultiplierNearTC = 1;
 
             [JsonProperty("DecayMultiplierNearTC")]
-            private float DeprecatedDecayMultiplierNearTC { set { DecayMultiplierNearTC = value; } }
+            private float DeprecatedDecayMultiplierNearTC { set => DecayMultiplierNearTC = value; }
 
             [JsonProperty("Protect from decay after recent use (minutes)", DefaultValueHandling = DefaultValueHandling.Ignore)]
             [DefaultValue(-1f)]
             public float ProtectionMinutesAfterUse = 10;
 
             [JsonProperty("ProtectionMinutesAfterUse")]
-            private float DeprecatedProtectionMinutesAfterUse { set { ProtectionMinutesAfterUse = value; } }
+            private float DeprecatedProtectionMinutesAfterUse { set => ProtectionMinutesAfterUse = value; }
 
             [JsonProperty("Decay interval (seconds)")]
             public float DecayIntervalSeconds = 60;
 
             [JsonProperty("DecayIntervalSeconds")]
-            private float DeprecatedDecayIntervalSeconds { set { DecayIntervalSeconds = value; } }
+            private float DeprecatedDecayIntervalSeconds { set => DecayIntervalSeconds = value; }
         }
 
         private class VehicleConfigMap
         {
             [JsonProperty("Attack Helicopter")]
-            public VehicleConfig AttackHelicopter = new VehicleConfig
+            public VehicleConfig AttackHelicopter = new()
             {
                 DecayMultiplierInside = 1f,
                 ProtectionMinutesAfterUse = 10,
             };
 
             [JsonProperty("Duo Submarine")]
-            public VehicleConfig DuoSubmarine = new VehicleConfig
+            public VehicleConfig DuoSubmarine = new()
             {
                 DecayMultiplierInside = 0f,
                 ProtectionMinutesAfterUse = -1,
             };
 
             [JsonProperty("DuoSubmarine")]
-            private VehicleConfig DeprecatedDuoSubmarine { set { DuoSubmarine = value; } }
+            private VehicleConfig DeprecatedDuoSubmarine { set => DuoSubmarine = value; }
 
             [JsonProperty("Hot Air Balloon")]
-            public VehicleConfig HotAirBalloon = new VehicleConfig
+            public VehicleConfig HotAirBalloon = new()
             {
                 DecayMultiplierInside = 0f,
                 ProtectionMinutesAfterUse = 10,
             };
 
             [JsonProperty("HotAirBalloon")]
-            private VehicleConfig DeprecatedHotAirBalloon { set { HotAirBalloon = value; } }
+            private VehicleConfig DeprecatedHotAirBalloon { set => HotAirBalloon = value; }
 
             [JsonProperty("Kayak")]
-            public VehicleConfig Kayak = new VehicleConfig
+            public VehicleConfig Kayak = new()
             {
                 DecayMultiplierInside = 0f,
                 ProtectionMinutesAfterUse = -1,
             };
 
             [JsonProperty("Minicopter")]
-            public VehicleConfig Minicopter = new VehicleConfig
+            public VehicleConfig Minicopter = new()
             {
                 DecayMultiplierInside = 1f,
                 ProtectionMinutesAfterUse = 10,
             };
 
             [JsonProperty("Modular Car")]
-            public VehicleConfig ModularCar = new VehicleConfig
+            public VehicleConfig ModularCar = new()
             {
                 DecayMultiplierInside = 0.1f,
                 ProtectionMinutesAfterUse = 10,
             };
 
             [JsonProperty("ModularCar")]
-            private VehicleConfig DeprecatedModularCar { set { ModularCar = value; } }
+            private VehicleConfig DeprecatedModularCar { set => ModularCar = value; }
 
             [JsonProperty("Motor Bike")]
-            public VehicleConfig MotorBike = new VehicleConfig
+            public VehicleConfig MotorBike = new()
             {
                 DecayMultiplierInside = 0f,
                 ProtectionMinutesAfterUse = 45,
             };
 
             [JsonProperty("Motor Bike Sidecar")]
-            public VehicleConfig MotorBikeSidecar = new VehicleConfig
+            public VehicleConfig MotorBikeSidecar = new()
             {
                 DecayMultiplierInside = 0f,
                 ProtectionMinutesAfterUse = 45,
             };
 
             [JsonProperty("Pedal Bike")]
-            public VehicleConfig PedalBike = new VehicleConfig
+            public VehicleConfig PedalBike = new()
             {
                 DecayMultiplierInside = 0f,
                 ProtectionMinutesAfterUse = 45,
             };
 
             [JsonProperty("Pedal Trike")]
-            public VehicleConfig PedalTrike = new VehicleConfig
+            public VehicleConfig PedalTrike = new()
             {
                 DecayMultiplierInside = 0f,
                 ProtectionMinutesAfterUse = 45,
             };
 
             [JsonProperty("RHIB")]
-            public VehicleConfig RHIB = new VehicleConfig
+            public VehicleConfig RHIB = new()
             {
                 DecayMultiplierInside = 0f,
                 ProtectionMinutesAfterUse = -1,
             };
 
             [JsonProperty("Ridable Horse")]
-            public VehicleConfig RidableHorse = new VehicleConfig
+            public VehicleConfig RidableHorse = new()
             {
                 DecayMultiplierInside = 2,
                 ProtectionMinutesAfterUse = 10,
             };
 
             [JsonProperty("RidableHorse")]
-            private VehicleConfig DeprecatedRidableHorse { set { RidableHorse = value; } }
+            private VehicleConfig DeprecatedRidableHorse { set => RidableHorse = value; }
 
             [JsonProperty("Rowboat")]
-            public VehicleConfig Rowboat = new VehicleConfig
+            public VehicleConfig Rowboat = new()
             {
                 DecayMultiplierInside = 0f,
                 ProtectionMinutesAfterUse = -1,
             };
 
             [JsonProperty("Scrap Transport Helicopter")]
-            public VehicleConfig ScrapTransportHelicopter = new VehicleConfig
+            public VehicleConfig ScrapTransportHelicopter = new()
             {
                 DecayMultiplierInside = 1f,
                 ProtectionMinutesAfterUse = 10,
             };
 
             [JsonProperty("ScrapTransportHelicopter")]
-            private VehicleConfig DeprecatedScrapTransportHelicopter { set { ScrapTransportHelicopter = value; } }
+            private VehicleConfig DeprecatedScrapTransportHelicopter { set => ScrapTransportHelicopter = value; }
 
             [JsonProperty("Sled")]
-            public VehicleConfig Sled = new VehicleConfig
+            public VehicleConfig Sled = new()
             {
                 DecayMultiplierInside = 1f,
                 ProtectionMinutesAfterUse = -1,
             };
 
             [JsonProperty("Sled Xmas")]
-            public VehicleConfig SledXmas = new VehicleConfig
+            public VehicleConfig SledXmas = new()
             {
                 DecayMultiplierInside = 1f,
                 ProtectionMinutesAfterUse = -1,
             };
 
             [JsonProperty("Sled.Xmas")]
-            private VehicleConfig DeprecatedSledXmas { set { SledXmas = value; } }
+            private VehicleConfig DeprecatedSledXmas { set => SledXmas = value; }
 
             [JsonProperty("Snowmobile")]
-            public VehicleConfig Snowmobile = new VehicleConfig
+            public VehicleConfig Snowmobile = new()
             {
                 DecayMultiplierInside = 0f,
                 ProtectionMinutesAfterUse = 45,
             };
 
             [JsonProperty("Solo Submarine")]
-            public VehicleConfig SoloSubmarine = new VehicleConfig
+            public VehicleConfig SoloSubmarine = new()
             {
                 DecayMultiplierInside = 0f,
                 ProtectionMinutesAfterUse = -1,
             };
 
             [JsonProperty("SoloSubmarine")]
-            private VehicleConfig DeprecatedSoloSubmarine { set { SoloSubmarine = value; } }
+            private VehicleConfig DeprecatedSoloSubmarine { set => SoloSubmarine = value; }
 
             [JsonProperty("Tomaha")]
-            public VehicleConfig Tomaha = new VehicleConfig
+            public VehicleConfig Tomaha = new()
             {
                 DecayMultiplierInside = 0f,
                 ProtectionMinutesAfterUse = 45,
             };
 
             [JsonProperty("Tugboat")]
-            public VehicleConfig Tugboat = new VehicleConfig
+            public VehicleConfig Tugboat = new()
             {
                 ProtectionMinutesAfterUse = -1,
             };
@@ -1278,13 +1271,13 @@ namespace Oxide.Plugins
             public bool EnablePermission = true;
 
             [JsonProperty("EnablePermission")]
-            private bool DeprecatedEnablePermission { set { EnablePermission = value; } }
+            private bool DeprecatedEnablePermission { set => EnablePermission = value; }
 
             [JsonProperty("Vehicles")]
-            public VehicleConfigMap Vehicles = new VehicleConfigMap();
+            public VehicleConfigMap Vehicles = new();
         }
 
-        private Configuration GetDefaultConfig() => new Configuration();
+        private Configuration GetDefaultConfig() => new();
 
         #endregion
 
@@ -1328,17 +1321,14 @@ namespace Oxide.Plugins
 
         private bool MaybeUpdateConfigDict(Dictionary<string, object> currentWithDefaults, Dictionary<string, object> currentRaw)
         {
-            bool changed = false;
+            var changed = false;
 
             foreach (var key in currentWithDefaults.Keys)
             {
-                object currentRawValue;
-                if (currentRaw.TryGetValue(key, out currentRawValue))
+                if (currentRaw.TryGetValue(key, out var currentRawValue))
                 {
-                    var defaultDictValue = currentWithDefaults[key] as Dictionary<string, object>;
                     var currentDictValue = currentRawValue as Dictionary<string, object>;
-
-                    if (defaultDictValue != null)
+                    if (currentWithDefaults[key] is Dictionary<string, object> defaultDictValue)
                     {
                         if (currentDictValue == null)
                         {
@@ -1346,7 +1336,9 @@ namespace Oxide.Plugins
                             changed = true;
                         }
                         else if (MaybeUpdateConfigDict(defaultDictValue, currentDictValue))
+                        {
                             changed = true;
+                        }
                     }
                 }
                 else
