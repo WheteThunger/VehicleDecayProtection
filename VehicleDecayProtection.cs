@@ -15,7 +15,7 @@ using UnityEngine;
 
 namespace Oxide.Plugins
 {
-    [Info("Vehicle Decay Protection", "WhiteThunder", "2.6.2")]
+    [Info("Vehicle Decay Protection", "WhiteThunder", "2.7.0")]
     [Description("Protects vehicles from decay based on ownership and other factors.")]
     internal class VehicleDecayProtection : CovalencePlugin
     {
@@ -528,6 +528,20 @@ namespace Oxide.Plugins
             DoDecayDamage(bike, vehicleInfo, multiplier / Bike.outsideDecayMinutes);
         }
 
+        private static void SiegeWeaponDecay(VehicleDecayProtection pluginInstance, BaseSiegeWeapon siegeWeapon, IVehicleInfo vehicleInfo)
+        {
+            if (siegeWeapon.IsDestroyed
+                || WasRecentlyUsed(siegeWeapon, vehicleInfo)
+                || VehicleHasPermission(pluginInstance, siegeWeapon, vehicleInfo))
+                return;
+
+            var multiplier = GetLocationMultiplier(pluginInstance, siegeWeapon, vehicleInfo);
+            if (multiplier == 0f)
+                return;
+
+            DoDecayDamage(siegeWeapon, vehicleInfo, multiplier / BaseSiegeWeapon.outsideDecayMinutes, useProtection: true);
+        }
+
         #endregion
 
         #region Vehicle Decay Component
@@ -721,6 +735,42 @@ namespace Oxide.Plugins
                         TimeSinceLastUsed = heli => UnityEngine.Time.time - heli.lastEngineOnTime,
                         VanillaDecayMethod = heli => heli.DecayTick,
                         Decay = (heli, vehicleInfo) => HelicopterDecay(_pluginInstance, heli, vehicleInfo),
+                    },
+                    new VehicleInfo<Ballista>
+                    {
+                        VehicleType = "ballista",
+                        PrefabPaths = new[] { "assets/content/vehicles/siegeweapons/ballista/ballista.entity.prefab" },
+                        VehicleConfig = pluginConfig.Vehicles.Ballista,
+                        TimeSinceLastUsed = siegeWeapon => UnityEngine.Time.time - siegeWeapon.lastUseTime,
+                        VanillaDecayMethod = siegeWeapon => siegeWeapon.DecayTick,
+                        Decay = (siegeWeapon, vehicleInfo) => SiegeWeaponDecay(_pluginInstance, siegeWeapon, vehicleInfo),
+                    },
+                    new VehicleInfo<BatteringRam>
+                    {
+                        VehicleType = "batteringram",
+                        PrefabPaths = new[] { "assets/content/vehicles/siegeweapons/batteringram/batteringram.entity.prefab" },
+                        VehicleConfig = pluginConfig.Vehicles.BatteringRam,
+                        TimeSinceLastUsed = siegeWeapon => UnityEngine.Time.time - siegeWeapon.lastUseTime,
+                        VanillaDecayMethod = siegeWeapon => siegeWeapon.DecayTick,
+                        Decay = (siegeWeapon, vehicleInfo) => SiegeWeaponDecay(_pluginInstance, siegeWeapon, vehicleInfo),
+                    },
+                    new VehicleInfo<Catapult>
+                    {
+                        VehicleType = "catapult",
+                        PrefabPaths = new[] { "assets/content/vehicles/siegeweapons/catapult/catapult.entity.prefab" },
+                        VehicleConfig = pluginConfig.Vehicles.Catapult,
+                        TimeSinceLastUsed = siegeWeapon => UnityEngine.Time.time - siegeWeapon.lastUseTime,
+                        VanillaDecayMethod = siegeWeapon => siegeWeapon.DecayTick,
+                        Decay = (siegeWeapon, vehicleInfo) => SiegeWeaponDecay(_pluginInstance, siegeWeapon, vehicleInfo),
+                    },
+                    new VehicleInfo<SiegeTower>
+                    {
+                        VehicleType = "siegetower",
+                        PrefabPaths = new[] { "assets/content/vehicles/siegeweapons/siegetower/siegetower.entity.prefab" },
+                        VehicleConfig = pluginConfig.Vehicles.SiegeTower,
+                        TimeSinceLastUsed = siegeWeapon => UnityEngine.Time.time - siegeWeapon.lastUseTime,
+                        VanillaDecayMethod = siegeWeapon => siegeWeapon.DecayTick,
+                        Decay = (siegeWeapon, vehicleInfo) => SiegeWeaponDecay(_pluginInstance, siegeWeapon, vehicleInfo),
                     },
                     new VehicleInfo<Bike>
                     {
@@ -1109,6 +1159,34 @@ namespace Oxide.Plugins
             {
                 DecayMultiplierInside = 1f,
                 ProtectionMinutesAfterUse = 10,
+            };
+
+            [JsonProperty("Ballista")]
+            public VehicleConfig Ballista = new()
+            {
+                DecayMultiplierInside = 0.1f,
+                ProtectionMinutesAfterUse = 5,
+            };
+
+            [JsonProperty("Battering Ram")]
+            public VehicleConfig BatteringRam = new()
+            {
+                DecayMultiplierInside = 0.1f,
+                ProtectionMinutesAfterUse = 5,
+            };
+
+            [JsonProperty("Catapult")]
+            public VehicleConfig Catapult = new()
+            {
+                DecayMultiplierInside = 0.1f,
+                ProtectionMinutesAfterUse = 5,
+            };
+
+            [JsonProperty("Siege Tower")]
+            public VehicleConfig SiegeTower = new()
+            {
+                DecayMultiplierInside = 0.1f,
+                ProtectionMinutesAfterUse = 5,
             };
 
             [JsonProperty("Duo Submarine")]

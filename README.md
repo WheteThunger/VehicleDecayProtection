@@ -29,6 +29,9 @@ Duo and Solo Submarines:
 Snowmobile and Tomaha:
 - `snowmobile.outsidedecayminutes`
 
+Ballista, Battering Ram, Catapult, and Siege Tower:
+- `basesiegeweapon.outsidedecayminutes`
+
 Other:
 - `baseridableanimal.decayminutes`
 - `bike.outsidedecayminutes`
@@ -43,7 +46,7 @@ Additional convars:
 
 Some vehicles also have an internal multiplier that affects decay damage while under a roof.
 - Horses: `2.0x` decay damage while under a roof
-- Modular Cars: `0.1x` decay damage while under a roof
+- Modular Cars and all Siege Weapons: `0.1x` decay damage while under a roof
 - All Boats and Submarines, except Tug Boats: no decay damage while under a roof
   - In vanilla, they also have to be in shallow water, but this plugin removes that restriction
 - Hot Air Balloons: no decay damage while under a roof
@@ -58,6 +61,9 @@ Granting the following permissions to a player will cause their **owned** vehicl
 
 - `vehicledecayprotection.nodecay.allvehicles` (all in one)
 - `vehicledecayprotection.nodecay.attackhelicopter`
+- `vehicledecayprotection.nodecay.ballista`
+- `vehicledecayprotection.nodecay.batteringram`
+- `vehicledecayprotection.nodecay.catapult`
 - `vehicledecayprotection.nodecay.duosubmarine`
 - `vehicledecayprotection.nodecay.hotairballoon`
 - `vehicledecayprotection.nodecay.kayak`
@@ -71,6 +77,7 @@ Granting the following permissions to a player will cause their **owned** vehicl
 - `vehicledecayprotection.nodecay.ridablehorse`
 - `vehicledecayprotection.nodecay.rowboat`
 - `vehicledecayprotection.nodecay.scraptransporthelicopter`
+- `vehicledecayprotection.nodecay.siegetower`
 - `vehicledecayprotection.nodecay.sled.xmas`
 - `vehicledecayprotection.nodecay.sled`
 - `vehicledecayprotection.nodecay.snowmobile`
@@ -107,6 +114,34 @@ Default configuration (equivalent to vanilla):
       "Protect from decay after recent use (minutes)": 10.0,
       "Decay interval (seconds)": 60.0
     },
+    "Ballista": {
+      "Allow the plugin to influence decay": true,
+      "Decay multiplier while inside": 0.1,
+      "Decay multiplier near tool cupboard": 1.0,
+      "Protect from decay after recent use (minutes)": 5.0,
+      "Decay interval (seconds)": 60.0
+    },
+    "Battering Ram": {
+      "Allow the plugin to influence decay": true,
+      "Decay multiplier while inside": 0.1,
+      "Decay multiplier near tool cupboard": 1.0,
+      "Protect from decay after recent use (minutes)": 5.0,
+      "Decay interval (seconds)": 60.0
+    },
+    "Catapult": {
+      "Allow the plugin to influence decay": true,
+      "Decay multiplier while inside": 0.1,
+      "Decay multiplier near tool cupboard": 1.0,
+      "Protect from decay after recent use (minutes)": 5.0,
+      "Decay interval (seconds)": 60.0
+    },
+    "Siege Tower": {
+      "Allow the plugin to influence decay": true,
+      "Decay multiplier while inside": 0.1,
+      "Decay multiplier near tool cupboard": 1.0,
+      "Protect from decay after recent use (minutes)": 5.0,
+      "Decay interval (seconds)": 60.0
+    },
     "Duo Submarine": {
       "Allow the plugin to influence decay": true,
       "Decay multiplier while inside": 0.0,
@@ -140,14 +175,14 @@ Default configuration (equivalent to vanilla):
       "Protect from decay after recent use (minutes)": 10.0,
       "Decay interval (seconds)": 60.0
     },
-    "Motor Bike Sidecar": {
+    "Motor Bike": {
       "Allow the plugin to influence decay": true,
       "Decay multiplier while inside": 0.0,
       "Decay multiplier near tool cupboard": 1.0,
       "Protect from decay after recent use (minutes)": 45.0,
       "Decay interval (seconds)": 60.0
     },
-    "Motor Bike": {
+    "Motor Bike Sidecar": {
       "Allow the plugin to influence decay": true,
       "Decay multiplier while inside": 0.0,
       "Decay multiplier near tool cupboard": 1.0,
