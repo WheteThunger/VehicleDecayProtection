@@ -15,7 +15,7 @@ using UnityEngine;
 
 namespace Oxide.Plugins
 {
-    [Info("Vehicle Decay Protection", "WhiteThunder", "2.7.0")]
+    [Info("Vehicle Decay Protection", "WhiteThunder", "2.7.1")]
     [Description("Protects vehicles from decay based on ownership and other factors.")]
     internal class VehicleDecayProtection : CovalencePlugin
     {
@@ -934,7 +934,6 @@ namespace Oxide.Plugins
                         {
                             "assets/content/vehicles/horse/ridablehorse2.prefab",
                             "assets/content/vehicles/horse/_old/testridablehorse.prefab",
-                            "assets/rust.ai/nextai/testridablehorse.prefab",
                         },
                         VehicleConfig = pluginConfig.Vehicles.RidableHorse,
                         TimeSinceLastUsed = horse =>
