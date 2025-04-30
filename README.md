@@ -33,7 +33,7 @@ Ballista, Battering Ram, Catapult, and Siege Tower:
 - `basesiegeweapon.outsidedecayminutes`
 
 Other:
-- `baseridableanimal.decayminutes`
+- `ridablehorse.decayminutes`
 - `bike.outsidedecayminutes`
 - `hotairballoon.outsidedecayminutes`
 - `modularcar.outsidedecayminutes`
