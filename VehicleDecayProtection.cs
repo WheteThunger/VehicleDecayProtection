@@ -15,7 +15,7 @@ using UnityEngine;
 
 namespace Oxide.Plugins
 {
-    [Info("Vehicle Decay Protection", "WhiteThunder", "2.7.2")]
+    [Info("Vehicle Decay Protection", "WhiteThunder", "2.7.3")]
     [Description("Protects vehicles from decay based on ownership and other factors.")]
     internal class VehicleDecayProtection : CovalencePlugin
     {
@@ -147,9 +147,9 @@ namespace Oxide.Plugins
             if (vehiclePrivilege == null)
                 return false;
 
-            foreach (var entry in vehiclePrivilege.authorizedPlayers)
+            foreach (var userId in vehiclePrivilege.authorizedPlayers)
             {
-                if (UserHasVehiclePermission(entry.userid, vehicleSpecificNoDecayPerm))
+                if (UserHasVehiclePermission(userId, vehicleSpecificNoDecayPerm))
                     return true;
             }
 
