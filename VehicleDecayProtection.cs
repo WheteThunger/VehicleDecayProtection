@@ -880,7 +880,11 @@ namespace Oxide.Plugins
                     new VehicleInfo<RHIB>
                     {
                         VehicleType = "rhib",
-                        PrefabPaths = new[] { "assets/content/vehicles/boats/rhib/rhib.prefab" },
+                        PrefabPaths = new[]
+                        {
+                            "assets/content/vehicles/boats/rhib/rhib.prefab",
+                            "assets/content/vehicles/boats/rhib/rhib.deepsea.prefab",
+                        },
                         VehicleConfig = pluginConfig.Vehicles.RHIB,
                         TimeSinceLastUsed = rhib => rhib.timeSinceLastUsedFuel,
                         VanillaDecayMethod = rhib => rhib.BoatDecay,
