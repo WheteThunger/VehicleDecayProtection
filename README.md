@@ -15,7 +15,7 @@ Minicopters, Scrap Transport Helicopters, and Attack Helicopters:
 - `playerhelicopter.insidedecayminutes`
 - `playerhelicopter.outsidedecayminutes`
 
-Row Boats, RHIBs, and Kayaks:
+Row Boats, RHIBs, PT Boats, and Kayaks:
 - `motorrowboat.outsidedecayminutes`
 - `motorrowboat.deepwaterdecayminutes`
 
@@ -73,6 +73,7 @@ Granting the following permissions to a player will cause their **owned** vehicl
 - `vehicledecayprotection.nodecay.motorbike`
 - `vehicledecayprotection.nodecay.pedalbike`
 - `vehicledecayprotection.nodecay.pedaltrike`
+- `vehicledecayprotection.nodecay.ptboat`
 - `vehicledecayprotection.nodecay.rhib`
 - `vehicledecayprotection.nodecay.ridablehorse`
 - `vehicledecayprotection.nodecay.rowboat`
@@ -221,6 +222,12 @@ Default configuration (equivalent to vanilla):
       "Decay multiplier near tool cupboard": 1.0,
       "Decay interval (seconds)": 60.0
     },
+    "PT Boat": {
+      "Allow the plugin to influence decay": true,
+      "Decay multiplier while inside": 0.0,
+      "Decay multiplier near tool cupboard": 1.0,
+      "Decay interval (seconds)": 60.0
+    },
     "Tugboat": {
       "Allow the plugin to influence decay": true,
       "Decay multiplier while inside": 1.0,
@@ -280,7 +287,7 @@ Each vehicle type has the following options:
 - `Decay multiplier near tool cupboard` -- Determines how much to scale decay damage for vehicles that are near **any** tool cupboard (regardless of whether the vehicle owner is authorized). Defaults to `1.0` which has no effect. Set to `0.0` to completely nullify decay damage near tool cupboards.
 - `Protect from decay after recent use (minutes)` -- Determines how many minutes to protect vehicles from decay after they have been used.
   - Note: This option does not appear in the config for boats because there are already vanilla convars for that:
-    - `motorrowboat.decaystartdelayminutes` -- Applies to Row Boats, RHIBs, Kayaks, Duo Submarines, and Solo Submarines.
+    - `motorrowboat.decaystartdelayminutes` -- Applies to Row Boats, RHIBs, PT Boats, Kayaks, Duo Submarines, and Solo Submarines.
     - `tugboat.tugdecaystartdelayminutes` -- Applies to Tug Boats.
 - `Decay interval (seconds)` -- Determines how often each vehicle can take decay damage. Raise this value to deal decay damage less frequently and to improve performance. The plugin will automatically compensate for slower schedules by dealing higher amounts of decay damage, so you don't have to worry about this affecting damage over time.
 

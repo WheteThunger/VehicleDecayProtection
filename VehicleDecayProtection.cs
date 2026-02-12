@@ -15,7 +15,7 @@ using UnityEngine;
 
 namespace Oxide.Plugins
 {
-    [Info("Vehicle Decay Protection", "WhiteThunder", "2.7.3")]
+    [Info("Vehicle Decay Protection", "WhiteThunder", "2.8.0")]
     [Description("Protects vehicles from decay based on ownership and other factors.")]
     internal class VehicleDecayProtection : CovalencePlugin
     {
@@ -500,6 +500,21 @@ namespace Oxide.Plugins
             DoDecayDamage(waterVehicle, vehicleInfo, multiplier / decayMinutes);
         }
 
+        private static void MotorRowboatDecay(VehicleDecayProtection pluginInstance, MotorRowboat boat, IVehicleInfo vehicleInfo)
+        {
+            if (boat.IsDying)
+                return;
+
+            WaterVehicleDecay(
+                pluginInstance,
+                boat,
+                vehicleInfo,
+                MotorRowboat.outsidedecayminutes,
+                MotorRowboat.deepwaterdecayminutes,
+                MotorRowboat.decaystartdelayminutes
+            );
+        }
+
         private static void SledDecay(VehicleDecayProtection pluginInstance, Sled sled, IVehicleInfo vehicleInfo)
         {
             if (sled.DecayAmount == 0f
@@ -888,20 +903,20 @@ namespace Oxide.Plugins
                         VehicleConfig = pluginConfig.Vehicles.RHIB,
                         TimeSinceLastUsed = rhib => rhib.timeSinceLastUsedFuel,
                         VanillaDecayMethod = rhib => rhib.BoatDecay,
-                        Decay = (rhib, vehicleInfo) =>
+                        Decay = (rhib, vehicleInfo) => MotorRowboatDecay(_pluginInstance, rhib, vehicleInfo),
+                    },
+                    new VehicleInfo<PTBoat>
+                    {
+                        VehicleType = "ptboat",
+                        PrefabPaths = new[]
                         {
-                            if (rhib.IsDying)
-                                return;
-
-                            WaterVehicleDecay(
-                                _pluginInstance,
-                                rhib,
-                                vehicleInfo,
-                                MotorRowboat.outsidedecayminutes,
-                                MotorRowboat.deepwaterdecayminutes,
-                                MotorRowboat.decaystartdelayminutes
-                            );
-                        }
+                            "assets/content/vehicles/boats/ptboat/ptboat.prefab",
+                            "assets/content/vehicles/boats/ptboat/ptboat.deepsea.prefab",
+                        },
+                        VehicleConfig = pluginConfig.Vehicles.PTBoat,
+                        TimeSinceLastUsed = ptBoat => ptBoat.timeSinceLastUsedFuel,
+                        VanillaDecayMethod = ptBoat => ptBoat.BoatDecay,
+                        Decay = (ptBoat, vehicleInfo) => MotorRowboatDecay(_pluginInstance, ptBoat, vehicleInfo),
                     },
                     new VehicleInfo<RidableHorse>
                     {
@@ -937,20 +952,7 @@ namespace Oxide.Plugins
                         VehicleConfig = pluginConfig.Vehicles.Rowboat,
                         TimeSinceLastUsed = rowBoat => rowBoat.timeSinceLastUsedFuel,
                         VanillaDecayMethod = rowBoat => rowBoat.BoatDecay,
-                        Decay = (rowBoat, vehicleInfo) =>
-                        {
-                            if (rowBoat.IsDying)
-                                return;
-
-                            WaterVehicleDecay(
-                                _pluginInstance,
-                                rowBoat,
-                                vehicleInfo,
-                                MotorRowboat.outsidedecayminutes,
-                                MotorRowboat.deepwaterdecayminutes,
-                                MotorRowboat.decaystartdelayminutes
-                            );
-                        }
+                        Decay = (rowBoat, vehicleInfo) => MotorRowboatDecay(_pluginInstance, rowBoat, vehicleInfo),
                     },
                     new VehicleInfo<ScrapTransportHelicopter>
                     {
@@ -1215,6 +1217,13 @@ namespace Oxide.Plugins
 
             [JsonProperty("RHIB")]
             public VehicleConfig RHIB = new()
+            {
+                DecayMultiplierInside = 0f,
+                ProtectionMinutesAfterUse = -1,
+            };
+
+            [JsonProperty("PT Boat")]
+            public VehicleConfig PTBoat = new()
             {
                 DecayMultiplierInside = 0f,
                 ProtectionMinutesAfterUse = -1,
