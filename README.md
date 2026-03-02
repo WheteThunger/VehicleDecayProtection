@@ -15,6 +15,9 @@ Minicopters, Scrap Transport Helicopters, and Attack Helicopters:
 - `playerhelicopter.insidedecayminutes`
 - `playerhelicopter.outsidedecayminutes`
 
+Player-buildable boats:
+- `playerboat.decayminutes`
+
 Row Boats, RHIBs, PT Boats, and Kayaks:
 - `motorrowboat.outsidedecayminutes`
 - `motorrowboat.deepwaterdecayminutes`
@@ -41,6 +44,7 @@ Other:
 If you want to simply disable decay for vehicles, then you can just set these to really high (i.e., `1000000`) and you don't need a plugin.
 
 Additional convars:
+- `playerboat.decaystartdelayminutes` -- Determines how long until decay begins for the vehicle after it was last used, applying to player-buildable boats.
 - `motorrowboat.decaystartdelayminutes` -- Determines how long until decay begins for the vehicle after it was last used, applying to Row Boats, RHIBs, Kayaks, Duo Submarines, and Solo Submarines.
 - `tugboat.tugdecaystartdelayminutes` -- Determines how long until decay begins for the vehicle after it was last used, applying to Tug Boats.
 
@@ -73,6 +77,7 @@ Granting the following permissions to a player will cause their **owned** vehicl
 - `vehicledecayprotection.nodecay.motorbike`
 - `vehicledecayprotection.nodecay.pedalbike`
 - `vehicledecayprotection.nodecay.pedaltrike`
+- `vehicledecayprotection.nodecay.playerboat`
 - `vehicledecayprotection.nodecay.ptboat`
 - `vehicledecayprotection.nodecay.rhib`
 - `vehicledecayprotection.nodecay.ridablehorse`
@@ -176,6 +181,12 @@ Default configuration (equivalent to vanilla):
       "Decay multiplier while inside": 0.0,
       "Decay multiplier near tool cupboard": 1.0,
       "Protect from decay after recent use (minutes)": 45.0,
+      "Decay interval (seconds)": 60.0
+    },
+    "Player Boat": {
+      "Allow the plugin to influence decay": false,
+      "Decay multiplier while inside": 0.0,
+      "Decay multiplier near tool cupboard": 1.0,
       "Decay interval (seconds)": 60.0
     },
     "Snowmobile": {

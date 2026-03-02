@@ -15,7 +15,7 @@ using UnityEngine;
 
 namespace Oxide.Plugins
 {
-    [Info("Vehicle Decay Protection", "WhiteThunder", "2.8.0")]
+    [Info("Vehicle Decay Protection", "WhiteThunder", "2.9.0")]
     [Description("Protects vehicles from decay based on ownership and other factors.")]
     internal class VehicleDecayProtection : CovalencePlugin
     {
@@ -143,7 +143,7 @@ namespace Oxide.Plugins
 
         private bool VehiclePrivilegeHasPermission(BaseEntity vehicle, string vehicleSpecificNoDecayPerm)
         {
-            var vehiclePrivilege = GetChildOfType<VehiclePrivilege>(vehicle);
+            var vehiclePrivilege = GetChildOfType<VehiclePrivilege>(vehicle) ?? GetChildOfType<SteeringWheel>(vehicle)?.Privilege;
             if (vehiclePrivilege == null)
                 return false;
 
@@ -280,9 +280,8 @@ namespace Oxide.Plugins
                 return true;
             }
 
-            ulong lockOwnerId;
             pluginInstance.TrackStart();
-            var lockOwnerHasPermission = pluginInstance.LockOwnerHasPermission(entity, vehicleInfo.Permission, out lockOwnerId);
+            var lockOwnerHasPermission = pluginInstance.LockOwnerHasPermission(entity, vehicleInfo.Permission, out _);
             pluginInstance.TrackEnd();
 
             if (lockOwnerHasPermission)
@@ -305,7 +304,8 @@ namespace Oxide.Plugins
             }
 
             pluginInstance.TrackStart();
-            var privilegeHasPermission = entity is Tugboat && pluginInstance.VehiclePrivilegeHasPermission(entity, vehicleInfo.Permission);
+            var privilegeHasPermission = entity is Tugboat && pluginInstance.VehiclePrivilegeHasPermission(entity, vehicleInfo.Permission)
+                || entity is PlayerBoat && pluginInstance.VehiclePrivilegeHasPermission(entity, vehicleInfo.Permission);
             pluginInstance.TrackEnd();
 
             if (privilegeHasPermission)
@@ -796,6 +796,22 @@ namespace Oxide.Plugins
                         VanillaDecayMethod = bike => bike.BikeDecay,
                         Decay = (bike, vehicleInfo) => BikeDecay(_pluginInstance, bike, vehicleInfo),
                     },
+                    new VehicleInfo<PlayerBoat>
+                    {
+                        VehicleType = "playerboat",
+                        PrefabPaths = new[] { "assets/prefabs/boat/playerboat.prefab" },
+                        VehicleConfig = pluginConfig.Vehicles.PlayerBoat,
+                        TimeSinceLastUsed = boat => boat.timeSinceLastUsed,
+                        VanillaDecayMethod = boat => boat.BoatDecay,
+                        Decay = (boat, vehicleInfo) => WaterVehicleDecay(
+                            _pluginInstance,
+                            boat,
+                            vehicleInfo,
+                            PlayerBoat.decayminutes,
+                            PlayerBoat.decayminutes,
+                            PlayerBoat.decaystartdelayminutes
+                        ),
+                    },
                     new VehicleInfo<SubmarineDuo>
                     {
                         VehicleType = "duosubmarine",
@@ -809,7 +825,7 @@ namespace Oxide.Plugins
                             vehicleInfo,
                             BaseSubmarine.outsidedecayminutes,
                             BaseSubmarine.deepwaterdecayminutes
-                        )
+                        ),
                     },
                     new VehicleInfo<HotAirBalloon>
                     {
@@ -831,7 +847,7 @@ namespace Oxide.Plugins
                                 return;
 
                             DoDecayDamage(hab, vehicleInfo, multiplier / HotAirBalloon.outsidedecayminutes);
-                        }
+                        },
                     },
                     new VehicleInfo<Kayak>
                     {
@@ -890,7 +906,7 @@ namespace Oxide.Plugins
                                 : car.MaxHealth();
 
                             DoCarDecayDamage(car, vehicleInfo, health * vehicleInfo.GetTimeMultiplier() * multiplier / ModularCar.outsidedecayminutes);
-                        }
+                        },
                     },
                     new VehicleInfo<RHIB>
                     {
@@ -1168,6 +1184,14 @@ namespace Oxide.Plugins
             {
                 DecayMultiplierInside = 0f,
                 ProtectionMinutesAfterUse = 45,
+            };
+
+            [JsonProperty("Player Boat")]
+            public VehicleConfig PlayerBoat = new()
+            {
+                Enabled = false,
+                DecayMultiplierInside = 0f,
+                ProtectionMinutesAfterUse = -1,
             };
 
             [JsonProperty("Snowmobile")]
